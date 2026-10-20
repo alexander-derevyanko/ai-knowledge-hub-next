@@ -204,10 +204,6 @@
   overflow-wrap: anywhere;
 }
 
-.document-details__field--full {
-  grid-column: 1 / -1;
-}
-
 /* Footer */
 
 .document-details__button {
@@ -314,10 +310,6 @@
   .document-details__grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
-  }
-
-  .document-details__field--full {
-    grid-column: auto;
   }
 
   .document-details__footer {

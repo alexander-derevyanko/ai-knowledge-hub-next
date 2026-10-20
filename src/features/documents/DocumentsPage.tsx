@@ -1,9 +1,9 @@
+import { fetchDocuments } from '@/lib/data/document-service';
 import DocumentsClient from './components/DocumentsClient/DocumentsClient';
 import './DocumentsPage.css';
-import { DOCUMENTS } from '@/lib/data/documents';
 
-export default function DocumentsPage() {
-  const documents = DOCUMENTS;
+export default async function DocumentsPage() {
+  const documents = await fetchDocuments();
 
   return (
     <div className="documents">

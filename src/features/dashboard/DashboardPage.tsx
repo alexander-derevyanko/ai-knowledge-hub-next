@@ -1,19 +1,20 @@
-import { DOCUMENTS } from '@/lib/data/documents';
 import { DASHBOARD_STATS, DashboardStats } from './dashboard.constants';
 import './DashboardPage.css';
 import StatCard from '@/components/shared/StatCard/StatCard';
 import DocumentCard from '@/components/shared/DocumentCard/DocumentCard';
 import { formatFileSize } from '@/lib/utils/formatFileSize';
+import { fetchDocuments } from '@/lib/data/document-service';
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const documents = await fetchDocuments();
   const stats = DASHBOARD_STATS.map((stat) => {
     switch (stat.id) {
       case DashboardStats.Documents:
-        return { ...stat, value: DOCUMENTS.length };
+        return { ...stat, value: documents.length };
       case DashboardStats.Questions:
         return { ...stat, value: '-' };
       case DashboardStats.Storage: {
-        const totalStorage = DOCUMENTS.reduce((total, { size }) => total + size, 0);
+        const totalStorage = documents.reduce((total, { size }) => total + size, 0);
 
         return { ...stat, value: formatFileSize(totalStorage) };
       }
@@ -41,7 +42,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="documents-list">
-          {DOCUMENTS.map((document) => (
+          {documents.map((document) => (
             <DocumentCard key={document.id} document={document} />
           ))}
         </div>
