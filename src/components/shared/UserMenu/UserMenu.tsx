@@ -3,10 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import './UserMenu.css';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const pathname = usePathname();
+  const isActive = pathname === '/settings';
 
   useEffect(() => {
     function handleClickOutside(e: Event) {
@@ -76,7 +79,7 @@ export default function UserMenu() {
 
           <Link
             href="/settings"
-            className="user-menu__item"
+            className={`user-menu__item ${isActive ? 'active' : ''}`}
             role="menuitem"
             onClick={() => setIsOpen(false)}
           >

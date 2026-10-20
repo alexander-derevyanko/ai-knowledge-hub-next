@@ -1,0 +1,65 @@
+* {
+  box-sizing: border-box;
+}
+
+.chat-page {
+  width: 100%;
+  max-width: 1200px;
+  height: min(90vh, 900px);
+  min-height: 520px;
+  margin: 24px auto;
+  padding: 0 30px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #dedede;
+  border-radius: 22px;
+  color: #111111;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  overflow: hidden;
+}
+
+.chat-page__header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 28px 0;
+  border-bottom: 1px solid #e9e9e9;
+  flex-shrink: 0;
+}
+
+.chat-page__avatar {
+  width: 66px;
+  height: 66px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  border-radius: 18px;
+}
+
+.chat-page__avatar svg {
+  width: 28px;
+  height: 28px;
+}
+
+.chat-page__heading h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.3;
+  font-weight: 650;
+  letter-spacing: -0.6px;
+}
+
+.chat-page__heading p {
+  margin: 12px 0 0;
+  color: #626262;
+  font-size: 17px;
+  line-height: 1.4;
+}
