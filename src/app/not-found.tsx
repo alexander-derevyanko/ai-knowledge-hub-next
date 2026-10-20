@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-// import './NotFoundPage.css';
+import './not-found.css';
 
 export default function NotFoundPage() {
   return (

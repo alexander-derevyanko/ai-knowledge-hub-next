@@ -1,0 +1,11 @@
+.page-layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+
+  min-height: calc(100vh - var(--header-height));
+}
+
+.main-content {
+  min-width: 0;
+  padding: 32px;
+}
