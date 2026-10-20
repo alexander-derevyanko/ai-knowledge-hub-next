@@ -1,6 +1,8 @@
 import type { Document } from '@/lib/types/document';
 import './DocumentCard.css';
 import { formatFileSize } from '@/lib/utils/formatFileSize';
+import Link from 'next/link';
+import DocumentStatus from '@/components/shared/DocumentStatus/DocumentStatus';
 
 interface DocumentCardProps {
   document: Document;
@@ -19,18 +21,20 @@ export default function DocumentCard({ document }: DocumentCardProps) {
       </div>
 
       <div className="document-card__content">
-        <h2 className="document-card__title">{document.title}</h2>
+        <Link href={`/documents/${document.id}`}>
+          <h2 className="document-card__title">{document.title}</h2>
+        </Link>
 
         <p className="document-card__meta">
           {document.category} · {document.type} · {formatedFileSize}
         </p>
 
         <p className="document-card__updated">
-          Updated {new Date(document.updatedAt).toLocaleString('en-EN')}
+          Updated {new Date(document.updatedAt).toLocaleString('en-US')}
         </p>
       </div>
 
-      <span className="document-card__status">Ready</span>
+      <DocumentStatus status={document.status} />
     </article>
   );
 }
