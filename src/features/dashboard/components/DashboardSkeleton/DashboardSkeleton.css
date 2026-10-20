@@ -1,0 +1,293 @@
+/* Skeleton — shared geometry comes from DashboardPage.css */
+
+.dashboard-skeleton {
+  --skeleton-base: #e9edf4;
+  --skeleton-highlight: #f8faff;
+}
+
+/* Shimmer */
+
+.dashboard-skeleton .skeleton {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--skeleton-base);
+  border-radius: 5px;
+  isolation: isolate;
+}
+
+.dashboard-skeleton .skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--skeleton-highlight) 50%,
+    transparent 100%
+  );
+  animation: dashboard-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes dashboard-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Header: preserve real heading geometry */
+
+.dashboard-skeleton .dashboard__header {
+  display: block;
+  margin-bottom: 28px;
+}
+
+.dashboard-skeleton .dashboard__header h1 {
+  display: block;
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.dashboard-skeleton .dashboard__header p {
+  display: block;
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Visible placeholder for Dashboard */
+
+.dashboard-skeleton .dashboard-skeleton__title {
+  display: block;
+  width: 165px;
+  height: 34px;
+  margin: 0;
+  border-radius: 5px;
+}
+
+/* Visible placeholder for Welcome back, Alex */
+
+.dashboard-skeleton .dashboard-skeleton__subtitle {
+  display: block;
+  width: 165px;
+  height: 22.5px;
+  margin: 0;
+  border-radius: 5px;
+}
+
+/* Statistics
+   Keep the actual 3-column grid and its spacing. */
+
+.dashboard-skeleton .dashboard__stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.dashboard-skeleton__stat-card {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 140px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 3%);
+}
+
+.dashboard-skeleton__stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.dashboard-skeleton__stat-label {
+  width: 100px;
+  max-width: 70%;
+  height: 15px;
+}
+
+.dashboard-skeleton__stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #edf1fb !important;
+}
+
+.dashboard-skeleton__stat-value {
+  width: 90px;
+  max-width: 80%;
+  height: 29px;
+  margin-bottom: 10px;
+}
+
+.dashboard-skeleton__stat-caption {
+  width: 125px;
+  max-width: 90%;
+  height: 13px;
+}
+
+/* Recent Documents */
+
+.dashboard-skeleton .section-header h2 {
+  color: transparent;
+}
+
+.dashboard-skeleton__section-title {
+  width: 170px;
+  height: 23.8px;
+  margin: 0;
+}
+
+/* Match the real list container */
+
+.dashboard-skeleton .documents-list {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 3%);
+}
+
+/* Match DocumentCard row layout */
+
+.dashboard-skeleton .dashboard-skeleton__document-card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  min-height: 104px;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.dashboard-skeleton .dashboard-skeleton__document-card + .dashboard-skeleton__document-card {
+  border-top: 1px solid #e2e8f0;
+}
+
+.dashboard-skeleton__document-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e8ebf0;
+  border-radius: 11px;
+  background: #f5f7fa !important;
+}
+
+.dashboard-skeleton__document-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dashboard-skeleton__document-title {
+  width: min(240px, 75%);
+  height: 15px;
+  margin-bottom: 10px;
+}
+
+.dashboard-skeleton__document-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.dashboard-skeleton__document-category {
+  width: 88px;
+  height: 13px;
+}
+
+.dashboard-skeleton__document-info {
+  width: 90px;
+  height: 13px;
+}
+
+.dashboard-skeleton__document-info--short {
+  width: 75px;
+}
+
+.dashboard-skeleton__document-date {
+  width: 165px;
+  max-width: 80%;
+  height: 12px;
+}
+
+.dashboard-skeleton__document-status {
+  flex: 0 0 74px;
+  width: 74px;
+  height: 29px;
+  border-radius: 20px;
+  background: #e5f5ec !important;
+}
+
+/* Tablet: same breakpoint as the real page */
+
+@media (max-width: 800px) {
+  .dashboard-skeleton .dashboard__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-skeleton__stat-card {
+    padding: 18px;
+  }
+}
+
+/* Mobile: same breakpoint and spacing as the real page */
+
+@media (max-width: 600px) {
+  .dashboard-skeleton .dashboard__stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .dashboard-skeleton__stat-card {
+    min-height: 120px;
+    padding: 16px;
+  }
+
+  .dashboard-skeleton .dashboard__header h1 {
+    font-size: 24px;
+  }
+
+  .dashboard-skeleton .dashboard-skeleton__document-card {
+    gap: 12px;
+    padding: 14px 12px;
+  }
+
+  .dashboard-skeleton .dashboard-skeleton__document-icon {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .dashboard-skeleton .dashboard-skeleton__document-status {
+    flex-basis: 12px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-skeleton .skeleton::after {
+    animation: none;
+  }
+}
