@@ -1,17 +1,17 @@
 import { notFound } from 'next/navigation';
 
-import { DOCUMENTS } from '@/lib/data/documents';
 import './DocumentDetails.css';
 import { formatFileSize } from '@/lib/utils/formatFileSize';
 import BackButton from '../BackButton/BackButton';
 import DocumentStatus from '@/components/shared/DocumentStatus/DocumentStatus';
+import { getDocumentById } from '@/lib/data/document-service';
 
 type DocumentDetailsProps = {
   id: string;
 };
 
-export default function DocumentDetailsPage({ id }: DocumentDetailsProps) {
-  const document = DOCUMENTS.find(({ id: docId }) => docId === id);
+export default async function DocumentDetailsPage({ id }: DocumentDetailsProps) {
+  const document = await getDocumentById(id);
 
   if (!document) {
     notFound();
@@ -80,15 +80,10 @@ export default function DocumentDetailsPage({ id }: DocumentDetailsProps) {
           </div>
 
           <div className="document-details__field">
-            <dt>Status</dt>
-            <dd>
-              <DocumentStatus status={document.status} />
-            </dd>
-          </div>
-
-          <div className="document-details__field document-details__field--full">
             <dt>Last updated</dt>
-            <dd>{new Date(document.updatedAt).toLocaleString('en-US')}</dd>
+            <dd>
+              <dd>{new Date(document.updatedAt).toLocaleString('en-US')}</dd>
+            </dd>
           </div>
         </dl>
       </section>
