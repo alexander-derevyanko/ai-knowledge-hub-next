@@ -1,0 +1,48 @@
+.document-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: fit-content;
+  padding: 6px 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Status indicator */
+
+.document-status__dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+/* Ready */
+
+.document-status--ready {
+  color: #278452;
+  background: #effbf4;
+  border-color: #d4f3df;
+}
+
+/* Processing */
+
+.document-status--processing {
+  color: #9a6700;
+  background: #fff8e6;
+  border-color: #f6e5ad;
+}
+
+/* Failed */
+
+.document-status--failed {
+  color: #c53939;
+  background: #fff1f1;
+  border-color: #fbd5d5;
+}
