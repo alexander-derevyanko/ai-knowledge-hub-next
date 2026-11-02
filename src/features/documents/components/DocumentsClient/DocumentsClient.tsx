@@ -4,11 +4,10 @@ import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 
-import type { DocumentUploadFormValues, Document } from '@/lib/types/document';
-import { DocSortOption, DocStatus, DocCategory } from '@/lib/types/document';
-import { getDocType } from '@/lib/utils/getDocType';
-import { isEnumValue } from '@/lib/utils/isEnumValue';
-
+import type { DocumentUploadFormValues, Document } from '@/shared/types/document';
+import { DocSortOption, DocStatus, DocCategory } from '@/shared/types/document';
+import { getDocType } from '@/shared/utils/getDocType';
+import { isEnumValue } from '@/shared/utils/isEnumValue';
 import DocumentFilters from '../DocumentFilters/DocumentFilters';
 import DocumentList from '../DocumentList/DocumentList';
 

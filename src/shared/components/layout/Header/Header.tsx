@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-import UserMenu from '@/components/shared/UserMenu/UserMenu';
+import UserMenu from '@/shared/components/ui/UserMenu/UserMenu';
 
 import './Header.css';
 

@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 
 import './DocumentDetails.css';
-import { formatFileSize } from '@/lib/utils/formatFileSize';
 import BackButton from '../BackButton/BackButton';
-import DocumentStatus from '@/components/shared/DocumentStatus/DocumentStatus';
-import { getDocumentById } from '@/lib/api/documentApi';
+import DocumentStatus from '@/shared/components/ui/DocumentStatus/DocumentStatus';
+import { getDocumentById } from '@/shared/api/documentsApi';
+import { formatFileSize } from '@/shared/utils/formatFileSize';
 
 type DocumentDetailsProps = {
   id: string;

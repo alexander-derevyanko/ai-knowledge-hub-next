@@ -1,4 +1,4 @@
-import { DocStatus } from '@/lib/types/document';
+import { DocStatus } from '@/shared/types/document';
 import './DocumentStatus.css';
 
 type DocumentStatusProps = {

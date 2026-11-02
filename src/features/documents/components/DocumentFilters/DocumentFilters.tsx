@@ -1,4 +1,4 @@
-import { DocCategory, DocSortOption } from '@/lib/types/document';
+import { DocCategory, DocSortOption } from '@/shared/types/document';
 import './DocumentFilters.css';
 
 interface DocumentFiltersProps {

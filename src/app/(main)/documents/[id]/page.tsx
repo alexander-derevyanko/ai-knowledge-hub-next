@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import DocumentDetailsPage from '@/features/documents/components/DocumentDetails/DocumentDetails';
-import { getDocumentById } from '@/lib/api/documentApi';
+import { getDocumentById } from '@/shared/api/documentsApi';
 
 type PageProps = {
   params: Promise<{ id: string }>;
