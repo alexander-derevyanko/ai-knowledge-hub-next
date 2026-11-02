@@ -7,13 +7,15 @@ import { usePathname } from 'next/navigation';
 
 export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const isActive = pathname === '/settings';
 
   useEffect(() => {
-    function handleClickOutside(e: Event) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    function handleClickOutside(e: MouseEvent) {
+      const menu = menuRef.current;
+
+      if (menu && e.target instanceof Node && !menu.contains(e.target)) {
         setIsOpen(false);
       }
     }
