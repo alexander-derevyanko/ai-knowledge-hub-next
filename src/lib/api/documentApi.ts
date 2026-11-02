@@ -1,12 +1,14 @@
+import 'server-only';
+
 import type { Document } from '../types/document';
-import { DOCUMENTS } from './documents';
+import { DOCUMENTS } from '../data/documents';
 
 export async function fetchDocuments(): Promise<Document[]> {
-  await new Promise<void>((resolve, reject) => {
+  await new Promise<void>((resolve) => {
     setTimeout(resolve, 2000);
   });
 
-  return DOCUMENTS;
+  return [...DOCUMENTS];
 }
 
 export async function getDocumentById(id: string): Promise<Document | null> {
