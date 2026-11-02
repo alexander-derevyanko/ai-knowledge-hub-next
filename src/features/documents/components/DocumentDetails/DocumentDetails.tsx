@@ -81,9 +81,7 @@ export default async function DocumentDetailsPage({ id }: DocumentDetailsProps) 
 
           <div className="document-details__field">
             <dt>Last updated</dt>
-            <dd>
-              <dd>{new Date(document.updatedAt).toLocaleString('en-US')}</dd>
-            </dd>
+            <dd>{new Date(document.updatedAt).toLocaleString('en-US')}</dd>
           </div>
         </dl>
       </section>
