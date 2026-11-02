@@ -1,9 +1,9 @@
 import { DASHBOARD_STATS, DashboardStats } from './dashboard.constants';
 import './DashboardPage.css';
-import StatCard from '@/components/shared/StatCard/StatCard';
-import DocumentCard from '@/components/shared/DocumentCard/DocumentCard';
-import { formatFileSize } from '@/lib/utils/formatFileSize';
-import { fetchDocuments } from '@/lib/api/documentApi';
+import StatCard from '@/shared/components/ui/StatCard/StatCard';
+import DocumentCard from '@/shared/components/ui/DocumentCard/DocumentCard';
+import { fetchDocuments } from '@/shared/api/documentsApi';
+import { formatFileSize } from '@/shared/utils/formatFileSize';
 
 export default async function DashboardPage() {
   const documents = await fetchDocuments();

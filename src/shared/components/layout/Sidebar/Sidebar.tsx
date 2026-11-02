@@ -1,4 +1,4 @@
-import NavigationItem from '@/components/shared/NavigationItem/NavigationItem';
+import NavigationItem from '@/shared/components/ui/NavigationItem/NavigationItem';
 import { SIDEBAR_CONFIG } from './sidebar.constants';
 import './Sidebar.css';
 

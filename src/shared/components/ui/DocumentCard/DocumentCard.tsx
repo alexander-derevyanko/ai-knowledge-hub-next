@@ -1,8 +1,9 @@
-import type { Document } from '@/lib/types/document';
-import './DocumentCard.css';
-import { formatFileSize } from '@/lib/utils/formatFileSize';
 import Link from 'next/link';
-import DocumentStatus from '@/components/shared/DocumentStatus/DocumentStatus';
+
+import type { Document } from '@/shared/types/document';
+import DocumentStatus from '@/shared/components/ui/DocumentStatus/DocumentStatus';
+import { formatFileSize } from '@/shared/utils/formatFileSize';
+import './DocumentCard.css';
 
 interface DocumentCardProps {
   document: Document;

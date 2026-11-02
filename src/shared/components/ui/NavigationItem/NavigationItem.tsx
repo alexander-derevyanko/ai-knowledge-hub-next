@@ -1,6 +1,6 @@
 'use client';
 
-import { SidebarItem } from '@/components/layout/Sidebar/Sidebar';
+import { SidebarItem } from '@/shared/components/layout/Sidebar/Sidebar';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';

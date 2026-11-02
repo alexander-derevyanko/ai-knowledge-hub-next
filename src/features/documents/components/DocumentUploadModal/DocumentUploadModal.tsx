@@ -3,7 +3,7 @@
 import { useForm, useWatch } from 'react-hook-form';
 import { useRef } from 'react';
 
-import { DocumentUploadFormValues, DocCategory } from '@/lib/types/document';
+import { DocumentUploadFormValues, DocCategory } from '@/shared/types/document';
 
 import './DocumentUploadModal.css';
 

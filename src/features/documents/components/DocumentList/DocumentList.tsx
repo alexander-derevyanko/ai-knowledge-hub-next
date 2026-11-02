@@ -1,5 +1,5 @@
-import DocumentCard from '@/components/shared/DocumentCard/DocumentCard';
-import { Document } from '@/lib/types/document';
+import DocumentCard from '@/shared/components/ui/DocumentCard/DocumentCard';
+import { Document } from '@/shared/types/document';
 import './DocumentList.css';
 
 interface DocumentListProps {
