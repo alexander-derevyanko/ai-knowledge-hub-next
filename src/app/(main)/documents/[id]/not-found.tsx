@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
+
 import BackButton from '@/features/documents/components/BackButton/BackButton';
 import './not-found.css';
+
+export const metadata: Metadata = {
+  title: '404 — Document Not Found',
+  description: 'The requested document could not be found.',
+};
 
 export default function NotFoundPage() {
   return (

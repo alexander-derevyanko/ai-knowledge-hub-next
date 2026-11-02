@@ -1,7 +1,13 @@
 'use client';
 
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import './not-found.css';
+
+export const metadata: Metadata = {
+  title: '404 — Page Not Found',
+  description: 'The requested page could not be found.',
+};
 
 export default function NotFoundPage() {
   return (
