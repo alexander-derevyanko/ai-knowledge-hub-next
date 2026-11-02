@@ -3,7 +3,7 @@ import './DashboardPage.css';
 import StatCard from '@/components/shared/StatCard/StatCard';
 import DocumentCard from '@/components/shared/DocumentCard/DocumentCard';
 import { formatFileSize } from '@/lib/utils/formatFileSize';
-import { fetchDocuments } from '@/lib/data/document-service';
+import { fetchDocuments } from '@/lib/data/documentApi';
 
 export default async function DashboardPage() {
   const documents = await fetchDocuments();

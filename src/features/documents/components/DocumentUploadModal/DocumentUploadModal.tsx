@@ -1,9 +1,11 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import './DocumentUploadModal.css';
+import { useForm, useWatch } from 'react-hook-form';
 import { useRef } from 'react';
+
 import { DocumentUploadFormValues, DocCategory } from '@/lib/types/document';
+
+import './DocumentUploadModal.css';
 
 type DocumentUploadModalProps = {
   onClose: () => void;
@@ -12,9 +14,9 @@ type DocumentUploadModalProps = {
 
 export default function DocumentUploadModal({ onClose, onSubmitDoc }: DocumentUploadModalProps) {
   const {
+    control,
     register,
     handleSubmit,
-    watch,
     reset,
     formState: { errors },
   } = useForm<DocumentUploadFormValues>({
@@ -23,7 +25,12 @@ export default function DocumentUploadModal({ onClose, onSubmitDoc }: DocumentUp
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const selectedFile = watch('file')?.[0];
+  const selectedFiles = useWatch({
+    control,
+    name: 'file',
+  });
+
+  const selectedFile = selectedFiles?.[0];
 
   const { ref: registerFileRef, ...fileRegistration } = register('file', {
     required: 'File is required',

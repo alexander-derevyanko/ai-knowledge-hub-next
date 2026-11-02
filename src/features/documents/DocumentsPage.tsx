@@ -1,4 +1,4 @@
-import { fetchDocuments } from '@/lib/data/document-service';
+import { fetchDocuments } from '@/lib/data/documentApi';
 import DocumentsClient from './components/DocumentsClient/DocumentsClient';
 import './DocumentsPage.css';
 

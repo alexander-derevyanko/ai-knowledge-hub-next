@@ -2,7 +2,7 @@ import type { Document } from '../types/document';
 import { DOCUMENTS } from './documents';
 
 export async function fetchDocuments(): Promise<Document[]> {
-  await new Promise<void>((resolve) => {
+  await new Promise<void>((resolve, reject) => {
     setTimeout(resolve, 2000);
   });
 

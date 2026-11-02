@@ -1,15 +1,11 @@
 'use client';
 
-import { useState, ChangeEvent } from 'react';
+import type { ChangeEvent } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 
-import {
-  DocCategory,
-  DocSortOption,
-  DocumentUploadFormValues,
-  DocStatus,
-} from '@/lib/types/document';
-import { Document } from '@/lib/types/document';
+import type { DocumentUploadFormValues, Document } from '@/lib/types/document';
+import { DocSortOption, DocStatus, DocCategory } from '@/lib/types/document';
 import { getDocType } from '@/lib/utils/getDocType';
 import { isEnumValue } from '@/lib/utils/isEnumValue';
 

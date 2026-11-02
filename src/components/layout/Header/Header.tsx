@@ -1,6 +1,9 @@
 import Link from 'next/link';
-import './Header.css';
+import { Suspense } from 'react';
+
 import UserMenu from '@/components/shared/UserMenu/UserMenu';
+
+import './Header.css';
 
 export default function Header() {
   return (
@@ -11,7 +14,9 @@ export default function Header() {
         </Link>
       </h4>
 
-      <UserMenu />
+      <Suspense fallback={null}>
+        <UserMenu />
+      </Suspense>
     </header>
   );
 }
