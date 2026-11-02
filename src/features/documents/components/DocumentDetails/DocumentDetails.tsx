@@ -4,7 +4,7 @@ import './DocumentDetails.css';
 import { formatFileSize } from '@/lib/utils/formatFileSize';
 import BackButton from '../BackButton/BackButton';
 import DocumentStatus from '@/components/shared/DocumentStatus/DocumentStatus';
-import { getDocumentById } from '@/lib/data/documentApi';
+import { getDocumentById } from '@/lib/api/documentApi';
 
 type DocumentDetailsProps = {
   id: string;
