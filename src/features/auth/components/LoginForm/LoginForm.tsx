@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 
 import './LoginForm.css';
 import type { LoginCredentials } from '../../types/auth';
@@ -10,6 +11,7 @@ import { login } from '../../api/authApi';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -32,6 +34,8 @@ export default function LoginForm() {
 
     try {
       await login(credentials);
+
+      router.replace('/dashboard');
     } catch (error) {
       setError('root.server', {
         type: 'server',

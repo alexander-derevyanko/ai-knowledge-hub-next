@@ -31,7 +31,6 @@ export default function LogoutButton({ setIsOpen }: LogoutButtonProps) {
       toast.dismiss(toastId);
 
       router.replace('/login');
-      router.refresh();
     } catch {
       toast.error('Unable to sign out. Please try again.', {
         id: toastId,
