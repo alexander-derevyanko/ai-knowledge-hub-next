@@ -1,15 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import './UserMenu.css';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
+import './UserMenu.css';
+
+import LogoutButton from '@/features/auth/components/LogoutButton/LogoutButton';
 
 export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const isActive = pathname === '/settings';
+  const isActive = pathname === '/settings' || pathname.startsWith('/settings/');
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -71,15 +74,6 @@ export default function UserMenu() {
           <div className="user-menu__divider" />
 
           <Link
-            href="/profile"
-            className="user-menu__item"
-            role="menuitem"
-            onClick={() => setIsOpen(false)}
-          >
-            Profile
-          </Link>
-
-          <Link
             href="/settings"
             className={`user-menu__item ${isActive ? 'active' : ''}`}
             role="menuitem"
@@ -90,14 +84,7 @@ export default function UserMenu() {
 
           <div className="user-menu__divider" />
 
-          <button
-            type="button"
-            className="user-menu__item user-menu__item--danger"
-            role="menuitem"
-            onClick={() => setIsOpen(false)}
-          >
-            Sign out
-          </button>
+          <LogoutButton setIsOpen={setIsOpen} />
         </div>
       )}
     </div>
