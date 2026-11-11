@@ -1,13 +1,21 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# vscode
+# ==================================================
+# IDE / Editor
+# ==================================================
+
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 
-# dependencies
-/node_modules
-/.pnp
+.idea/
+
+# ==================================================
+# Dependencies
+# ==================================================
+
+**/node_modules/
+
+# Yarn
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -15,34 +23,62 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# ==================================================
+# Build output
+# ==================================================
 
-# next.js
-/.next/
-/out/
+**/dist/
+**/build/
+**/.next/
+**/out/
 
-# production
-/build
+# ==================================================
+# Testing
+# ==================================================
 
-# misc
-.DS_Store
-*.pem
+**/coverage/
 
-# debug
+# ==================================================
+# Environment variables
+# ==================================================
+
+**/.env
+**/.env.*
+!**/.env.example
+
+# ==================================================
+# Logs
+# ==================================================
+
+**/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ==================================================
+# Cache
+# ==================================================
 
-# vercel
-.vercel
+**/.cache/
+**/.turbo/
 
-# typescript
-*.tsbuildinfo
+# ==================================================
+# TypeScript
+# ==================================================
+
+**/*.tsbuildinfo
 next-env.d.ts
 
+# ==================================================
+# OS / Misc
+# ==================================================
 
+.DS_Store
+*.pem
+
+# ==================================================
+# Deployment
+# ==================================================
+
+.vercel/
