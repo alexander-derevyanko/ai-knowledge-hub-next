@@ -84,3 +84,6 @@ next-env.d.ts
 .vercel/
 
 !**/.env.docker.example
+
+# Prisma generated client
+backend/src/generated/prisma/
