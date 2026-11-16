@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum DocumentCategory {
+  ARCHITECTURE
+  DEVELOPMENT
+  AI
+  PRODUCT
+  BUSINESS
+  SECURITY
+}
+
+enum DocumentType {
+  PDF
+  DOCX
+  TXT
+  MD
+}
+
+enum DocumentStatus {
+  READY
+  PROCESSING
+  FAILED
+}
+
+model User {
+  id           String @id @default(uuid())
+  email        String @unique
+  name         String
+  passwordHash String
+
+  memberships       OrganizationMember[]
+  uploadedDocuments Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  memberships OrganizationMember[]
+  documents   Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrganizationMember {
+  id             String           @id @default(uuid())
+  userId         String
+  organizationId String
+  role           OrganizationRole @default(MEMBER)
+
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+model Document {
+  id String @id @default(uuid())
+
+  title    String
+  category DocumentCategory
+  type     DocumentType
+  status   DocumentStatus   @default(PROCESSING)
+
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+  storageKey String?
+
+  organizationId String
+  uploadedById   String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status])
+}
