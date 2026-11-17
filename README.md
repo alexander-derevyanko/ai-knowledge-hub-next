@@ -1,43 +1,21 @@
 # AI Knowledge Hub
 
-**AI-powered personal knowledge management platform**
+A full-stack knowledge management platform for collecting, organizing, searching, and interacting with personal and organizational knowledge.
 
-AI Knowledge Hub is a full-stack web application designed to help users collect, organize, manage, and interact with their knowledge using AI-powered capabilities.
-
-The project is being built as a practical full-stack application, combining a modern frontend architecture with a dedicated backend and future AI integrations.
-
-The main goal is to create a centralized workspace where users can manage documents, explore their content, communicate with an AI assistant, and eventually retrieve relevant information from their personal knowledge base.
-
-The project is also an ongoing engineering project focused on exploring and applying modern React, Next.js, Node.js, NestJS, and AI integration patterns.
-
----
+The project is being developed as a long-term engineering and learning project, with a focus on modern frontend and backend architecture, authentication, data management, AI-powered search, and production-oriented infrastructure.
 
 ## Project Vision
 
-The idea behind AI Knowledge Hub is to build a personal knowledge workspace that goes beyond traditional document storage.
+AI Knowledge Hub is designed to become a workspace where users can:
 
-Users should be able to:
+- Manage documents and organize them by category.
+- Work with documents within an organization.
+- Search across their knowledge base.
+- Ask questions about uploaded documents using AI.
+- Get context-aware answers powered by Retrieval-Augmented Generation (RAG).
+- Eventually use AI agents and external tools to interact with their knowledge.
 
-- Upload and manage documents in one place.
-- Organize knowledge by categories and metadata.
-- Search, filter, and browse their knowledge base.
-- Interact with an AI assistant through a chat interface.
-- Ask questions about their documents and receive context-aware answers.
-- Manage their account and application settings.
-- Access their knowledge through a secure authentication system.
-
-### Planned AI capabilities
-
-The long-term vision includes:
-
-- AI-powered document processing and content extraction.
-- Semantic search across uploaded documents.
-- Retrieval-Augmented Generation (RAG).
-- Context-aware conversations based on personal knowledge.
-- AI-generated summaries and insights.
-- Document-based question answering.
-
-These capabilities are part of the product roadmap and are not yet implemented.
+The project is being built incrementally. The current implementation focuses on the application foundation, backend architecture, database integration, and authentication infrastructure.
 
 ---
 
@@ -45,248 +23,211 @@ These capabilities are part of the product roadmap and are not yet implemented.
 
 ### Frontend
 
-| Technology              | Purpose                                            |
-| ----------------------- | -------------------------------------------------- |
-| React 19                | UI library                                         |
-| Next.js 16 (App Router) | Full-stack React framework and application routing |
-| TypeScript              | Static typing                                      |
-| CSS                     | Styling                                            |
-| React Hook Form         | Form state management and validation               |
-| Sonner                  | Toast notifications                                |
+- React
+- Next.js 16 — App Router
+- TypeScript
+- CSS Modules
+- React Hook Form
+- Sonner
 
-### Frontend architecture and concepts
+### Backend
 
-- Next.js App Router
-- Server Components and Client Components
-- Nested layouts and route groups
-- Dynamic routing
-- Server-side data fetching
-- Loading and error boundaries
-- Metadata and SEO configuration
-- Cache Components and cache revalidation
-- Authentication architecture with HttpOnly cookies
-- Data Access Layer (DAL)
-- Next.js Proxy for preliminary route protection
-- Feature-based architecture
-- Reusable shared components and utilities
+- Node.js
+- NestJS 12
+- TypeScript
+- REST API
+- Prisma ORM 7
+- PostgreSQL 17
+- Redis — planned for session storage
+- Vitest
+- Oxlint
+- Prettier
 
-### Backend — planned
+### Infrastructure
 
-| Technology                   | Purpose                                    |
-| ---------------------------- | ------------------------------------------ |
-| Node.js                      | JavaScript runtime                         |
-| NestJS                       | Backend framework                          |
-| TypeScript                   | Static typing                              |
-| REST API                     | Frontend/backend communication             |
-| Database and ORM             | Persistent data storage                    |
-| Session-based authentication | User authentication and session management |
+- Docker
+- Docker Compose
+- PostgreSQL running in Docker
+- Redis — planned
+- Containerized frontend and backend — planned
 
-The backend stack and database implementation will be finalized during the backend development phase.
+### AI — Planned
 
-### AI — planned
-
-AI capabilities will be introduced as a separate part of the system architecture, with the goal of integrating document processing, semantic retrieval, and context-aware AI interactions.
-
----
-
-## Application Structure
-
-The application currently includes the following main areas:
-
-| Route             | Description                 |
-| ----------------- | --------------------------- |
-| `/dashboard`      | Main workspace and overview |
-| `/documents`      | Document management         |
-| `/documents/[id]` | Document details            |
-| `/chat`           | AI assistant interface      |
-| `/settings`       | Application settings        |
-| `/login`          | Authentication entry point  |
-
-The application uses Next.js route groups to separate authenticated and unauthenticated areas without introducing unnecessary URL segments.
+- LLM integration
+- Embeddings
+- Vector search
+- Retrieval-Augmented Generation (RAG)
+- AI agents
+- MCP integration
 
 ---
 
 ## Architecture
 
-The frontend follows a feature-based architecture with clear separation of responsibilities.
+The project is organized as a frontend application and an independently structured backend application.
 
 ```text
-src/
-├── app/
-│   ├── (auth)/
-│   │   └── login/
-│   ├── (main)/
+ai-knowledge-hub-next/
+├── src/                         # Next.js frontend
+│   ├── app/
+│   │   ├── (auth)/
+│   │   ├── (main)/
+│   │   ├── layout.tsx
+│   │   └── ...
+│   ├── features/
+│   │   ├── auth/
 │   │   ├── dashboard/
 │   │   ├── documents/
 │   │   ├── chat/
-│   │   ├── settings/
-│   │   └── layout.tsx
-│   ├── globals.css
-│   ├── layout.tsx
-│   ├── not-found.tsx
-│   └── proxy.ts
+│   │   └── settings/
+│   └── shared/
+│       ├── api/
+│       ├── components/
+│       ├── data/
+│       ├── types/
+│       └── utils/
 │
-├── features/
-│   ├── auth/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── lib/
-│   │   └── types/
-│   ├── dashboard/
-│   ├── documents/
-│   ├── chat/
-│   └── settings/
+├── backend/                     # NestJS application
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   ├── schema.prisma
+│   │   └── seed.ts
+│   ├── src/
+│   │   ├── health/
+│   │   ├── users/
+│   │   ├── organizations/
+│   │   ├── documents/
+│   │   ├── generated/
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   └── ...
 │
-└── shared/
-    ├── api/
-    ├── components/
-    │   ├── layout/
-    │   └── ui/
-    ├── data/
-    ├── types/
-    └── utils/
+├── docker-compose.yml
+├── .env.docker.example
+└── README.md
 ```
+
+The generated Prisma client is not committed to Git. It is generated from the Prisma schema.
 
 ### Architectural principles
 
-**App layer (`app/`)**
+- Frontend and backend are separate applications with independent responsibilities.
+- The backend owns business logic, persistence, and data access.
+- PostgreSQL is the primary persistent database.
+- Redis will be used for ephemeral session storage.
+- Document operations are scoped by organization.
+- Authentication and authorization will be enforced by the backend.
+- The frontend and backend will eventually run as separate Docker services.
+- External services and infrastructure are accessed through clear application boundaries.
 
-Responsible for routing, layouts, route-level loading and error handling, metadata, and composition of application features.
+---
 
-**Feature layer (`features/`)**
+## Application Features
 
-Contains domain-specific functionality, including UI components, API methods, business logic, and types belonging to individual features.
+### Frontend
 
-**Shared layer (`shared/`)**
+Current application routes:
 
-Contains reusable components, common utilities, shared API infrastructure, application-wide types, and data used by multiple features.
+| Route             | Description          |
+| ----------------- | -------------------- |
+| `/login`          | Authentication page  |
+| `/dashboard`      | Dashboard            |
+| `/documents`      | Documents list       |
+| `/documents/[id]` | Document details     |
+| `/chat`           | AI chat workspace    |
+| `/settings`       | Application settings |
 
-### Dependency direction
+The frontend currently includes the application shell, navigation, document-related UI, forms, loading and error states, and the initial authentication structure.
+
+The frontend authentication flow is prepared architecturally but is not yet connected to a complete backend authentication implementation.
+
+### Backend
+
+Current API base URL:
 
 ```text
-app
- ↓
-features
- ↓
-shared
+http://localhost:3001/api
 ```
 
-The shared layer must remain independent of application-specific features and routing.
+Implemented endpoints include:
 
-This structure is intended to keep the application maintainable and make future backend integration easier.
+| Method   | Endpoint         | Description              |
+| -------- | ---------------- | ------------------------ |
+| `GET`    | `/health`        | Health check             |
+| `GET`    | `/documents`     | List documents           |
+| `GET`    | `/documents/:id` | Get document             |
+| `POST`   | `/documents`     | Create document metadata |
+| `PATCH`  | `/documents/:id` | Update document metadata |
+| `DELETE` | `/documents/:id` | Delete document metadata |
 
----
+The Documents API currently supports:
 
-## Authentication Architecture
+- PostgreSQL persistence through Prisma.
+- Organization-scoped document queries and mutations.
+- Pagination.
+- Filtering by category and status.
+- Sorting by creation date, update date, or title.
+- Document creation, retrieval, update, and deletion.
 
-The authentication system is currently prepared on the frontend side.
+**Important:** document records and metadata are stored in PostgreSQL, but actual file upload, binary storage, text extraction, and AI processing have not been implemented yet.
 
-The intended authentication flow is based on backend-managed sessions and HttpOnly cookies.
-
-### Planned authentication flow
-
-1. The user submits login credentials.
-2. The frontend sends them to the backend.
-3. The backend validates credentials and creates a session.
-4. The backend sets an HttpOnly session cookie.
-5. The frontend retrieves the authenticated user through the `/auth/me` endpoint.
-6. Protected application routes verify the authenticated user.
-7. Logout invalidates the session on the backend.
-
-### Current implementation
-
-- Login form with React Hook Form.
-- Authentication API interface.
-- Authentication-related TypeScript contracts.
-- Server-side session cookie access.
-- Data Access Layer structure for retrieving the current user.
-- Next.js Proxy for preliminary route protection.
-- Protected and unauthenticated route layouts.
-- Logout UI and notification handling.
-
-**Important:** Real authentication is not yet connected to a backend. API methods are currently placeholders. Cookie creation, session validation, and session invalidation will be implemented in the NestJS backend phase.
-
-The Proxy is not considered a security boundary. Actual authentication and authorization must be enforced by the backend.
+The current Documents API temporarily receives `organizationId` from request parameters or body. This is an educational intermediate implementation, not a secure authorization mechanism. It will be replaced with organization context derived from the authenticated user.
 
 ---
 
-## Development Progress
+## Database
 
-The project is being developed incrementally, with each stage introducing new concepts and extending the existing application.
+PostgreSQL is the primary persistent data store.
 
-### Week 1 — React + TypeScript
+Current Prisma models:
 
-**Status: Completed**
+- `User`
+- `Organization`
+- `OrganizationMember`
+- `Document`
 
-Built the initial application using Vite, React, and TypeScript.
+The data model supports organization membership and roles (`OWNER`, `ADMIN`, `MEMBER`), as well as organization-scoped documents.
 
-Main areas covered:
+Prisma migrations are used to manage schema changes. A seed script creates a demo organization, user, and owner membership for local development.
 
-- React fundamentals and component architecture.
-- Props, state, and component composition.
-- Custom hooks.
-- Forms and user interactions.
-- Data management and reusable components.
-- Application feature organization.
-- Basic testing.
-- Initial MVP implementation.
+### Redis
 
-The first version established the core application functionality and served as the foundation for the Next.js migration.
+Redis is planned for authentication session storage.
 
-### Week 2 — Next.js
+The intended session architecture:
 
-**Status: Completed**
+- The browser stores an opaque session identifier in an HttpOnly cookie.
+- Redis stores the corresponding session data with a TTL.
+- The backend validates the session on protected requests.
+- Logout invalidates the session in Redis.
+- A `SessionStore` abstraction keeps authentication logic independent of the storage implementation.
 
-Migrated the application from Vite to Next.js and introduced the App Router architecture.
+PostgreSQL remains the source of truth for persistent business data. Redis is intended for ephemeral session data.
 
-Main areas covered:
+---
 
-- Next.js project setup and configuration.
-- App Router and route groups.
-- Nested layouts and dynamic routes.
-- Server Components and Client Components.
-- Server-side data fetching.
-- Loading, error, and not-found handling.
-- Cache Components and cache revalidation.
-- Metadata and SEO.
-- Authentication architecture.
-- Login and logout UI.
-- Session cookie handling and Data Access Layer.
-- Proxy-based preliminary route protection.
-- Production build and code quality checks.
+## Infrastructure and Docker
 
-The frontend is now structured to support future integration with a dedicated backend.
+Docker is part of the project's planned runtime architecture.
 
-### Week 3 — NestJS Backend
+### Currently implemented
 
-**Status: Planned / Next**
+- PostgreSQL 17 runs in Docker Compose.
+- PostgreSQL data is persisted in a named Docker volume.
+- The database is exposed locally through a loopback-bound port.
+- Environment variables are loaded from the root `.env.docker` file.
 
-The next stage focuses on building the backend.
+### Planned
 
-Planned topics:
+- Dockerfile for the backend.
+- Dockerfile for the frontend.
+- Redis service.
+- Full Docker Compose setup for frontend, backend, PostgreSQL, and Redis.
+- Service health checks and startup dependencies.
+- Development-friendly container configuration and hot reload.
+- Production-oriented container configuration.
 
-- NestJS fundamentals.
-- Modules, Controllers, Providers, and Dependency Injection.
-- REST API architecture.
-- DTOs, validation, and pipes.
-- Exception handling.
-- Database integration and ORM.
-- User management.
-- Authentication and session management.
-- Protected endpoints and authorization.
-- Integration with the Next.js frontend.
-
-### Future stages — AI Integration
-
-Planned development:
-
-- Document upload and processing.
-- Text extraction and indexing.
-- AI integration.
-- Embeddings and vector search.
-- Retrieval-Augmented Generation (RAG).
-- Context-aware AI chat.
-- Document-based question answering.
+The goal is to make all runtime services reproducible through Docker while keeping frontend and backend independently runnable and deployable.
 
 ---
 
@@ -294,72 +235,207 @@ Planned development:
 
 ### Prerequisites
 
-- Node.js (LTS recommended).
-- npm.
+- Node.js 24+
+- npm
+- Docker Desktop
+- Git
 
-### Installation
-
-Clone the repository:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/alexander-derevyanko/ai-knowledge-hub-next
 cd ai-knowledge-hub-next
 ```
 
-Install dependencies:
+### 2. Configure environment variables
+
+Copy the Docker environment template:
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+Update the values in `.env.docker`, including PostgreSQL credentials and `DATABASE_URL`.
+
+Do not commit `.env.docker`.
+
+### 3. Start PostgreSQL
+
+From the repository root:
+
+```bash
+docker compose --env-file .env.docker up -d postgres
+```
+
+Check the container:
+
+```bash
+docker compose --env-file .env.docker ps
+```
+
+### 4. Start the backend
+
+```bash
+cd backend
+npm install
+npm run prisma:generate
+npx prisma migrate dev
+npm run start:dev
+```
+
+The backend will be available at:
+
+```text
+http://localhost:3001/api
+```
+
+Health check:
+
+```text
+http://localhost:3001/api/health
+```
+
+To populate the development database:
+
+```bash
+npx prisma db seed
+```
+
+### 5. Start the frontend
+
+In a separate terminal, from the repository root:
 
 ```bash
 npm install
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+The frontend will be available at:
 
-### Available Scripts
-
-| Command                | Description                   |
-| ---------------------- | ----------------------------- |
-| `npm run dev`          | Start development server      |
-| `npm run build`        | Create production build       |
-| `npm run start`        | Start production server       |
-| `npm run lint`         | Run ESLint                    |
-| `npm run lint:fix`     | Fix lint issues automatically |
-| `npm run format`       | Format source files           |
-| `npm run format:check` | Check formatting              |
-| `npm run typecheck`    | Run TypeScript type checking  |
+```text
+http://localhost:3000
+```
 
 ---
 
-## Current Project Status
+## Development Progress
 
-**Frontend foundation completed. Backend development is the next milestone.**
+The project is developed in stages. Completed items describe implemented functionality; planned items are not yet available in the application.
 
-The current application has a working frontend structure, navigation, core feature interfaces, document management UI, and authentication architecture.
+### Week 1 — React + TypeScript foundation
 
-Some data and API operations are still mocked or represented by placeholders. Persistent storage, real authentication, backend endpoints, and AI-powered functionality remain part of the upcoming development stages.
+- Initial Vite application.
+- React and TypeScript setup.
+- Core application UI.
+- Reusable components and hooks.
+- Mock document data and frontend interactions.
 
-The project is evolving from a frontend MVP into a full-stack AI-powered knowledge management platform.
+**Status:** Completed.
+
+### Week 2 — Next.js application architecture
+
+- Migration to Next.js App Router.
+- Route groups and layouts.
+- Server and Client Components.
+- Dynamic routes and navigation.
+- Loading, error, and not-found states.
+- Metadata and SEO foundation.
+- Initial authentication architecture.
+- Frontend data-access structure.
+
+**Status:** Completed.
+
+### Week 3 — NestJS backend foundation and database integration
+
+- NestJS application setup and project configuration.
+- Modules, controllers, providers, dependency injection, and module boundaries.
+- REST API fundamentals and CRUD operations.
+- PostgreSQL running through Docker Compose.
+- Prisma 7 setup with PostgreSQL driver adapter.
+- Database schema and initial migrations.
+- Users and Organizations modules.
+- Organization membership and roles.
+- Database-backed Documents CRUD.
+- Organization-scoped document operations.
+- Pagination, filtering, and sorting.
+- Development database seed.
+
+**Next steps within this stage:**
+
+- DTOs and request validation with `class-validator` and `class-transformer`.
+- Global `ValidationPipe`.
+- Consistent API error response contract with stable error codes and human-readable messages.
+- Exception handling and correct HTTP error responses.
+- Password hashing and authentication endpoints.
+- Session management using Redis.
+- Authentication guards and organization context derived from the authenticated user.
+
+**Status:** In progress.
+
+### Week 4 — Full-stack integration and runtime infrastructure
+
+- Connect the Next.js frontend to the real NestJS API.
+- Replace remaining mock document data with backend requests.
+- Complete cookie-based authentication integration.
+- Implement authenticated server-side data access.
+- Add Redis to Docker Compose.
+- Add frontend and backend Dockerfiles.
+- Run frontend, backend, PostgreSQL, and Redis through Docker Compose.
+- Configure local development workflows and service health checks.
+
+**Status:** Planned.
+
+### Week 5 — Document file lifecycle
+
+- File upload API.
+- File validation and metadata handling.
+- Storage abstraction.
+- Local or external object storage integration.
+- Document processing lifecycle.
+- Text extraction from supported formats.
+- Processing status and error handling.
+
+**Status:** Planned.
+
+### Week 6 — Search and AI foundation
+
+- Embeddings generation.
+- Vector storage and similarity search.
+- Document chunking.
+- Retrieval-Augmented Generation (RAG).
+- Context-aware chat with documents.
+- LLM integration.
+
+**Status:** Planned.
+
+### Future stages — AI capabilities and production readiness
+
+- AI agents and tool calling.
+- MCP integration.
+- Advanced search and knowledge workflows.
+- Automated tests and end-to-end coverage.
+- Logging, monitoring, and observability.
+- Security hardening.
+- Deployment and production infrastructure.
+
+**Status:** Planned.
 
 ---
 
 ## Engineering Goals
 
-Beyond building the product itself, this project focuses on practical engineering skills:
+The project is also used to explore and apply practical engineering concepts:
 
-- Designing scalable frontend and backend architectures.
-- Applying modern React and Next.js patterns.
-- Understanding server-side rendering and React Server Components.
-- Building REST APIs with NestJS.
-- Implementing secure authentication and authorization.
-- Working with databases and data modeling.
-- Integrating AI services into real-world applications.
-- Maintaining clean code, clear boundaries, and testable components.
+- Modular application architecture.
+- Clean separation of responsibilities.
+- Type-safe API contracts.
+- Database modeling and migrations.
+- Multi-tenant data isolation.
+- Authentication and authorization.
+- Session lifecycle and security.
+- Containerization and reproducible environments.
+- Error handling and validation.
+- Testing and maintainability.
+- AI integration and RAG architecture.
 
----
-
-**AI Knowledge Hub — one place to collect, organize, and interact with your knowledge.**
+The roadmap may evolve as implementation decisions and technical requirements become clearer.

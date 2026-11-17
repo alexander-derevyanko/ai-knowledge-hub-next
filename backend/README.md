@@ -1,132 +1,433 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# AI Knowledge Hub — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS backend application for AI Knowledge Hub.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The backend provides the REST API, business logic, database access, and authentication foundation for the AI Knowledge Hub platform.
 
-## Description
+The application is designed around modular architecture, organization-scoped data access, and independently deployable services.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech Stack
 
-## Project setup
+- Node.js 24+
+- NestJS 12
+- TypeScript
+- REST API
+- PostgreSQL 17
+- Prisma ORM 7
+- Prisma PostgreSQL driver adapter (`@prisma/adapter-pg`)
+- Docker Compose
+- Vitest
+- Oxlint
+- Prettier
 
-```bash
-$ npm install
+### Planned
+
+- Redis for session storage.
+- `class-validator` and `class-transformer` for request validation.
+- Cookie-based authentication.
+- Automated integration and end-to-end tests.
+- File storage and document processing.
+
+---
+
+## Architecture
+
+The backend follows NestJS modular architecture.
+
+```text
+backend/
+├── prisma/
+│   ├── migrations/
+│   ├── schema.prisma
+│   └── seed.ts
+│
+├── src/
+│   ├── health/
+│   ├── users/
+│   ├── organizations/
+│   ├── documents/
+│   ├── generated/
+│   ├── app.module.ts
+│   └── main.ts
+│
+├── prisma7.config.ts
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
 
-## Compile and run the project
+`src/generated/prisma/` contains the generated Prisma client. It is excluded from Git and regenerated from the Prisma schema.
 
-```bash
-# development
-$ npm run start
+### Application modules
 
-# watch mode
-$ npm run start:dev
+| Module                | Responsibility                                 |
+| --------------------- | ---------------------------------------------- |
+| `HealthModule`        | Application health check                       |
+| `UsersModule`         | User data access and user-related operations   |
+| `OrganizationsModule` | Organizations, memberships, and roles          |
+| `DocumentsModule`     | Document metadata and organization-scoped CRUD |
 
-# production mode
-$ npm run start:prod
+### NestJS concepts used
+
+- Modules define application boundaries and encapsulate providers.
+- Controllers handle HTTP requests and responses.
+- Services contain application and business logic.
+- Dependency injection manages dependencies between providers.
+- PrismaService provides database access to application modules.
+
+---
+
+## API
+
+The global API prefix is:
+
+```text
+/api
 ```
 
-## Run tests
+The backend runs locally on port `3001` by default.
 
-```bash
-# unit tests
-$ npm run test
+### Health
 
-# e2e tests
-$ npm run test:e2e
+| Method | Endpoint      | Description  |
+| ------ | ------------- | ------------ |
+| `GET`  | `/api/health` | Health check |
 
-# test coverage
-$ npm run test:cov
+### Documents
+
+| Method   | Endpoint             | Description              |
+| -------- | -------------------- | ------------------------ |
+| `GET`    | `/api/documents`     | Get documents            |
+| `GET`    | `/api/documents/:id` | Get a document by ID     |
+| `POST`   | `/api/documents`     | Create document metadata |
+| `PATCH`  | `/api/documents/:id` | Update document metadata |
+| `DELETE` | `/api/documents/:id` | Delete document metadata |
+
+### Documents query parameters
+
+The list endpoint currently supports:
+
+| Parameter        | Description                          | Default     |
+| ---------------- | ------------------------------------ | ----------- |
+| `organizationId` | Organization scope                   | Required    |
+| `page`           | Page number                          | `1`         |
+| `limit`          | Number of records per page           | `10`        |
+| `category`       | Document category filter             | —           |
+| `status`         | Document status filter               | —           |
+| `sortBy`         | `createdAt`, `updatedAt`, or `title` | `createdAt` |
+| `sortOrder`      | `asc` or `desc`                      | `desc`      |
+
+The list response uses a `data` and `meta` structure:
+
+```json
+{
+  "data": [],
+  "meta": {
+    "total": 0,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 0
+  }
+}
 ```
 
-## Deployment
+### Current implementation scope
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+The Documents API manages document metadata in PostgreSQL.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+It does not yet implement:
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+- Physical file upload.
+- Binary file storage.
+- Text extraction.
+- Embeddings generation.
+- AI processing.
+
+**Temporary organization scope:** until authentication and authorization are implemented, `organizationId` is supplied by the request. It is used to scope document queries and mutations, but it is not a security boundary. A client must not be trusted to choose its own organization scope in the final implementation.
+
+The planned implementation will derive the active organization context from the authenticated user and their membership.
+
+---
+
+## Database
+
+PostgreSQL is the primary persistent database.
+
+It runs locally in Docker Compose from the repository root.
+
+### Prisma
+
+The project uses Prisma 7 with the PostgreSQL driver adapter.
+
+The Prisma schema is located at:
+
+```text
+prisma/schema.prisma
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The Prisma configuration is located at:
 
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-To add it to this project, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
-
-```bash
-$ npx @nestjs/observe link
+```text
+prisma7.config.ts
 ```
 
-It installs `@nestjs/observe`, wires it into `AppModule` and `main.ts`, and writes the app key and secret into `.env`, which every `nest start` script (`start`, `start:dev`, `start:debug`) then loads. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
+The generated client is located at:
 
-Or do it by hand:
-
-```bash
-$ npm install @nestjs/observe
+```text
+src/generated/prisma/
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/sdk) - it takes a single import and an app key.
+The generated client is not committed to Git.
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+### Data models
 
-## Resources
+| Model                | Responsibility                                  |
+| -------------------- | ----------------------------------------------- |
+| `User`               | User account data                               |
+| `Organization`       | Organization data                               |
+| `OrganizationMember` | User membership and role within an organization |
+| `Document`           | Document metadata and organization association  |
 
-Check out a few resources that may come in handy when working with NestJS:
+Organization roles:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- `OWNER`
+- `ADMIN`
+- `MEMBER`
 
-## Support
+Documents are associated with an organization. Database queries and mutations in the Documents service are scoped by `organizationId`.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Migrations
 
-## Stay in touch
+Create and apply a development migration:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npx prisma migrate dev --name migration_name
+```
 
-## License
+Check migration status:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+npx prisma migrate status
+```
+
+Generate the Prisma client:
+
+```bash
+npm run prisma:generate
+```
+
+The build lifecycle also generates the Prisma client through the configured prebuild step.
+
+### Seed
+
+The seed script is located at:
+
+```text
+prisma/seed.ts
+```
+
+Run it from the `backend` directory:
+
+```bash
+npx prisma db seed
+```
+
+The seed is idempotent and creates or reuses:
+
+- A demo organization with slug `ai-knowledge-hub`.
+- A demo user with email `demo@example.com`.
+- An `OWNER` membership connecting the user to the organization.
+
+The seed user's password hash is a placeholder and is not a valid login credential. Authentication implementation must introduce proper password hashing and credentials.
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 24+
+- npm
+- Docker Desktop
+
+### 1. Configure environment variables
+
+Environment configuration is stored in the repository root.
+
+From the repository root:
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+Configure the PostgreSQL credentials and `DATABASE_URL` in `.env.docker`.
+
+Do not commit `.env.docker`.
+
+The backend loads this environment file for local development and Prisma CLI operations.
+
+### 2. Start PostgreSQL
+
+Run from the repository root:
+
+```bash
+docker compose --env-file .env.docker up -d postgres
+```
+
+Check the service:
+
+```bash
+docker compose --env-file .env.docker ps
+```
+
+### 3. Install backend dependencies
+
+```bash
+cd backend
+npm install
+```
+
+### 4. Generate Prisma client
+
+```bash
+npm run prisma:generate
+```
+
+### 5. Apply database migrations
+
+```bash
+npx prisma migrate dev
+```
+
+### 6. Seed development data
+
+```bash
+npx prisma db seed
+```
+
+### 7. Start the backend
+
+```bash
+npm run start:dev
+```
+
+The API will be available at:
+
+```text
+http://localhost:3001/api
+```
+
+Health check:
+
+```text
+http://localhost:3001/api/health
+```
+
+---
+
+## Available Scripts
+
+Run scripts from the `backend` directory.
+
+| Command                   | Description                      |
+| ------------------------- | -------------------------------- |
+| `npm run start:dev`       | Start NestJS in development mode |
+| `npm run build`           | Build the backend                |
+| `npm run lint`            | Run Oxlint                       |
+| `npm run format`          | Format source files              |
+| `npm run format:check`    | Check formatting                 |
+| `npm run test`            | Run tests                        |
+| `npm run prisma:generate` | Generate Prisma client           |
+
+Prisma CLI commands such as `migrate dev`, `migrate status`, and `db seed` are executed with `npx prisma` from the `backend` directory.
+
+---
+
+## Development Progress
+
+### Completed
+
+- NestJS application setup.
+- Global API prefix and health endpoint.
+- Modular architecture.
+- Controllers, providers, and dependency injection.
+- REST API fundamentals.
+- Initial CRUD implementation.
+- PostgreSQL Docker Compose service.
+- Prisma 7 integration with PostgreSQL.
+- Database schema and initial migrations.
+- Users and Organizations modules.
+- Organization membership and roles.
+- Database-backed Documents CRUD.
+- Organization-scoped document operations.
+- Pagination, filtering, and sorting.
+- Idempotent development seed.
+
+### Next steps
+
+1. **DTOs and validation**
+   - Request DTOs.
+   - `class-validator`.
+   - `class-transformer`.
+   - Global `ValidationPipe`.
+   - Query parameter transformation and validation.
+
+2. **Error handling**
+   - Global exception handling.
+   - Consistent error response structure.
+   - Stable machine-readable error codes.
+   - Human-readable error messages.
+   - Correct HTTP status codes.
+
+3. **Authentication**
+   - Password hashing.
+   - Registration and login.
+   - Cookie-based authentication.
+   - Session lifecycle.
+
+4. **Redis session storage**
+   - Redis service in Docker Compose.
+   - SessionStore abstraction.
+   - Redis-backed session implementation.
+   - Session TTL and invalidation.
+   - Logout.
+
+5. **Authorization and multi-tenancy**
+   - Authentication guards.
+   - Authenticated user context.
+   - Organization membership checks.
+   - Derive organization scope from authenticated context instead of request-supplied IDs.
+
+6. **Frontend integration**
+   - Connect the Next.js application to the backend.
+   - Integrate authentication cookies.
+   - Replace mock document data with API requests.
+   - Handle API errors consistently.
+
+7. **File lifecycle**
+   - File upload.
+   - File validation.
+   - Storage abstraction.
+   - Text extraction and processing status.
+
+8. **AI capabilities**
+   - Embeddings.
+   - Vector search.
+   - RAG.
+   - LLM integration.
+
+---
+
+## Engineering Principles
+
+- Keep modules focused and cohesive.
+- Keep controllers thin and move business logic into services.
+- Use dependency injection instead of manually constructing application dependencies.
+- Keep persistent business data in PostgreSQL.
+- Use Redis for ephemeral session data, not as a replacement for the primary database.
+- Scope tenant-owned data by organization.
+- Never expose password hashes through API responses.
+- Validate external input at the API boundary.
+- Return consistent, machine-readable API errors.
+- Keep infrastructure and storage details behind clear abstractions.
+- Prefer explicit, maintainable solutions over unnecessary abstractions.
