@@ -1,233 +1,118 @@
 # AI Knowledge Hub
 
-A full-stack knowledge management platform for collecting, organizing, searching, and interacting with personal and organizational knowledge.
+AI Knowledge Hub is a full-stack application designed to help users organize, manage, and interact with their knowledge.
 
-The project is being developed as a long-term engineering and learning project, with a focus on modern frontend and backend architecture, authentication, data management, AI-powered search, and production-oriented infrastructure.
+The project aims to evolve into an AI-powered knowledge workspace where users can manage documents, explore information, and get context-aware answers using AI.
 
-## Project Vision
+It is built as a long-term portfolio project with a focus on maintainable architecture, type safety, modular design, and production-oriented development practices.
 
-AI Knowledge Hub is designed to become a workspace where users can:
-
-- Manage documents and organize them by category.
-- Work with documents within an organization.
-- Search across their knowledge base.
-- Ask questions about uploaded documents using AI.
-- Get context-aware answers powered by Retrieval-Augmented Generation (RAG).
-- Eventually use AI agents and external tools to interact with their knowledge.
-
-The project is being built incrementally. The current implementation focuses on the application foundation, backend architecture, database integration, and authentication infrastructure.
+> **Status:** Active development. The frontend foundation and initial backend API are implemented. Authentication, document processing, and AI-powered capabilities are part of the upcoming development roadmap.
 
 ---
 
-## Tech Stack
+## Overview
+
+The application is organized around several core functional areas:
+
+- **Dashboard** — an overview of the user's knowledge workspace.
+- **Documents** — document organization and metadata management.
+- **Chat** — an interface for interacting with the knowledge base.
+- **Settings** — application and workspace configuration.
+- **Profile** — planned user profile and account management functionality.
+
+The long-term goal is to connect these areas into a unified experience powered by document processing, semantic search, and AI.
+
+---
+
+## Technology Stack
 
 ### Frontend
 
+- Next.js
 - React
-- Next.js 16 — App Router
 - TypeScript
+- App Router
 - CSS Modules
-- React Hook Form
-- Sonner
 
 ### Backend
 
 - Node.js
-- NestJS 12
+- NestJS
 - TypeScript
-- REST API
-- Prisma ORM 7
-- PostgreSQL 17
-- Redis — planned for session storage
-- Vitest
-- Oxlint
-- Prettier
+- Prisma ORM
+- PostgreSQL
 
-### Infrastructure
+### Infrastructure and Development Tools
 
 - Docker
 - Docker Compose
-- PostgreSQL running in Docker
-- Redis — planned
-- Containerized frontend and backend — planned
+- Vitest
+- Oxlint
+- ESLint / TypeScript tooling
 
-### AI — Planned
-
-- LLM integration
-- Embeddings
-- Vector search
-- Retrieval-Augmented Generation (RAG)
-- AI agents
-- MCP integration
+Additional technologies will be introduced when required by specific project capabilities.
 
 ---
 
 ## Architecture
 
-The project is organized as a frontend application and an independently structured backend application.
+AI Knowledge Hub consists of two independently runnable applications:
+
+- **Frontend** — Next.js application responsible for the user interface and frontend application logic.
+- **Backend** — NestJS REST API responsible for domain operations, business logic, and persistent data.
+
+PostgreSQL is used as the primary relational database.
+
+The architecture follows a modular approach, separating application features, shared functionality, API responsibilities, and infrastructure concerns.
+
+### High-Level Architecture
+
+```text
+                    AI Knowledge Hub
+                           |
+             +-------------+-------------+
+             |                           |
+          Frontend                    Backend
+          Next.js                     NestJS
+             |                           |
+      +------+------+          +---------+---------+
+      |      |      |          |         |         |
+   Dashboard Docs   Chat      Users  Organizations Documents
+      |
+   Settings
+      |
+   Profile
+   (planned)
+                                      |
+                                  PostgreSQL
+```
+
+### Repository Structure
 
 ```text
 ai-knowledge-hub-next/
-├── src/                         # Next.js frontend
-│   ├── app/
-│   │   ├── (auth)/
-│   │   ├── (main)/
-│   │   ├── layout.tsx
-│   │   └── ...
-│   ├── features/
-│   │   ├── auth/
-│   │   ├── dashboard/
-│   │   ├── documents/
-│   │   ├── chat/
-│   │   └── settings/
-│   └── shared/
-│       ├── api/
-│       ├── components/
-│       ├── data/
-│       ├── types/
-│       └── utils/
-│
-├── backend/                     # NestJS application
+├── backend/
 │   ├── prisma/
-│   │   ├── migrations/
-│   │   ├── schema.prisma
-│   │   └── seed.ts
 │   ├── src/
-│   │   ├── health/
-│   │   ├── users/
-│   │   ├── organizations/
-│   │   ├── documents/
-│   │   ├── generated/
-│   │   ├── app.module.ts
-│   │   └── main.ts
-│   └── ...
+│   ├── test/
+│   └── README.md
 │
+├── src/
+│   ├── app/
+│   ├── features/
+│   └── shared/
+│
+├── public/
 ├── docker-compose.yml
 ├── .env.docker.example
+├── next.config.ts
+├── package.json
 └── README.md
 ```
 
-The generated Prisma client is not committed to Git. It is generated from the Prisma schema.
+The frontend uses feature-oriented organization, while the backend follows NestJS modular architecture.
 
-### Architectural principles
-
-- Frontend and backend are separate applications with independent responsibilities.
-- The backend owns business logic, persistence, and data access.
-- PostgreSQL is the primary persistent database.
-- Redis will be used for ephemeral session storage.
-- Document operations are scoped by organization.
-- Authentication and authorization will be enforced by the backend.
-- The frontend and backend will eventually run as separate Docker services.
-- External services and infrastructure are accessed through clear application boundaries.
-
----
-
-## Application Features
-
-### Frontend
-
-Current application routes:
-
-| Route             | Description          |
-| ----------------- | -------------------- |
-| `/login`          | Authentication page  |
-| `/dashboard`      | Dashboard            |
-| `/documents`      | Documents list       |
-| `/documents/[id]` | Document details     |
-| `/chat`           | AI chat workspace    |
-| `/settings`       | Application settings |
-
-The frontend currently includes the application shell, navigation, document-related UI, forms, loading and error states, and the initial authentication structure.
-
-The frontend authentication flow is prepared architecturally but is not yet connected to a complete backend authentication implementation.
-
-### Backend
-
-Current API base URL:
-
-```text
-http://localhost:3001/api
-```
-
-Implemented endpoints include:
-
-| Method   | Endpoint         | Description              |
-| -------- | ---------------- | ------------------------ |
-| `GET`    | `/health`        | Health check             |
-| `GET`    | `/documents`     | List documents           |
-| `GET`    | `/documents/:id` | Get document             |
-| `POST`   | `/documents`     | Create document metadata |
-| `PATCH`  | `/documents/:id` | Update document metadata |
-| `DELETE` | `/documents/:id` | Delete document metadata |
-
-The Documents API currently supports:
-
-- PostgreSQL persistence through Prisma.
-- Organization-scoped document queries and mutations.
-- Pagination.
-- Filtering by category and status.
-- Sorting by creation date, update date, or title.
-- Document creation, retrieval, update, and deletion.
-
-**Important:** document records and metadata are stored in PostgreSQL, but actual file upload, binary storage, text extraction, and AI processing have not been implemented yet.
-
-The current Documents API temporarily receives `organizationId` from request parameters or body. This is an educational intermediate implementation, not a secure authorization mechanism. It will be replaced with organization context derived from the authenticated user.
-
----
-
-## Database
-
-PostgreSQL is the primary persistent data store.
-
-Current Prisma models:
-
-- `User`
-- `Organization`
-- `OrganizationMember`
-- `Document`
-
-The data model supports organization membership and roles (`OWNER`, `ADMIN`, `MEMBER`), as well as organization-scoped documents.
-
-Prisma migrations are used to manage schema changes. A seed script creates a demo organization, user, and owner membership for local development.
-
-### Redis
-
-Redis is planned for authentication session storage.
-
-The intended session architecture:
-
-- The browser stores an opaque session identifier in an HttpOnly cookie.
-- Redis stores the corresponding session data with a TTL.
-- The backend validates the session on protected requests.
-- Logout invalidates the session in Redis.
-- A `SessionStore` abstraction keeps authentication logic independent of the storage implementation.
-
-PostgreSQL remains the source of truth for persistent business data. Redis is intended for ephemeral session data.
-
----
-
-## Infrastructure and Docker
-
-Docker is part of the project's planned runtime architecture.
-
-### Currently implemented
-
-- PostgreSQL 17 runs in Docker Compose.
-- PostgreSQL data is persisted in a named Docker volume.
-- The database is exposed locally through a loopback-bound port.
-- Environment variables are loaded from the root `.env.docker` file.
-
-### Planned
-
-- Dockerfile for the backend.
-- Dockerfile for the frontend.
-- Redis service.
-- Full Docker Compose setup for frontend, backend, PostgreSQL, and Redis.
-- Service health checks and startup dependencies.
-- Development-friendly container configuration and hot reload.
-- Production-oriented container configuration.
-
-The goal is to make all runtime services reproducible through Docker while keeping frontend and backend independently runnable and deployable.
+For backend-specific architecture and setup instructions, see [`backend/README.md`](backend/README.md).
 
 ---
 
@@ -235,207 +120,154 @@ The goal is to make all runtime services reproducible through Docker while keepi
 
 ### Prerequisites
 
-- Node.js 24+
+- Node.js 24.x
 - npm
-- Docker Desktop
+- Docker with Docker Compose
 - Git
 
-### 1. Clone the repository
+The project has been developed with Node.js `24.21.0` and npm `11.19.0`.
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/alexander-derevyanko/ai-knowledge-hub-next
 cd ai-knowledge-hub-next
 ```
 
-### 2. Configure environment variables
+### 2. Install Dependencies
 
-Copy the Docker environment template:
+Install frontend dependencies:
+
+```bash
+npm install
+```
+
+Install backend dependencies:
+
+```bash
+cd backend
+npm install
+cd ..
+```
+
+### 3. Configure Environment
+
+Create the local Docker environment file:
 
 ```bash
 cp .env.docker.example .env.docker
 ```
 
-Update the values in `.env.docker`, including PostgreSQL credentials and `DATABASE_URL`.
+Configure the PostgreSQL credentials and connection settings in `.env.docker`.
 
-Do not commit `.env.docker`.
+The environment file contains local development configuration and must not be committed.
 
-### 3. Start PostgreSQL
+### 4. Start PostgreSQL
 
 From the repository root:
 
 ```bash
-docker compose --env-file .env.docker up -d postgres
+docker compose --env-file .env.docker up -d
 ```
 
-Check the container:
+Check the container status:
 
 ```bash
 docker compose --env-file .env.docker ps
 ```
 
-### 4. Start the backend
+### 5. Start the Backend
+
+In a separate terminal:
 
 ```bash
 cd backend
-npm install
-npm run prisma:generate
-npx prisma migrate dev
 npm run start:dev
 ```
 
-The backend will be available at:
+Backend URL:
 
 ```text
-http://localhost:3001/api
+http://localhost:3001
 ```
 
-Health check:
+### 6. Start the Frontend
 
-```text
-http://localhost:3001/api/health
-```
-
-To populate the development database:
+From the repository root, in another terminal:
 
 ```bash
-npx prisma db seed
-```
-
-### 5. Start the frontend
-
-In a separate terminal, from the repository root:
-
-```bash
-npm install
 npm run dev
 ```
 
-The frontend will be available at:
+Frontend URL:
 
 ```text
 http://localhost:3000
 ```
 
+For database migrations, Prisma configuration, and backend development commands, see [`backend/README.md`](backend/README.md).
+
 ---
 
-## Development Progress
+## Current Project Status
 
-The project is developed in stages. Completed items describe implemented functionality; planned items are not yet available in the application.
+The project is being developed incrementally, with each milestone introducing a coherent and verifiable set of capabilities.
 
-### Week 1 — React + TypeScript foundation
+### Implemented
 
-- Initial Vite application.
-- React and TypeScript setup.
-- Core application UI.
-- Reusable components and hooks.
-- Mock document data and frontend interactions.
-
-**Status:** Completed.
-
-### Week 2 — Next.js application architecture
-
-- Migration to Next.js App Router.
-- Route groups and layouts.
-- Server and Client Components.
-- Dynamic routes and navigation.
+- React and TypeScript frontend foundation.
+- Next.js App Router migration.
+- Application layouts and routing.
+- Feature-oriented frontend structure.
+- Dashboard, Documents, Chat, and Settings UI foundations.
+- Document list and details views.
 - Loading, error, and not-found states.
-- Metadata and SEO foundation.
-- Initial authentication architecture.
-- Frontend data-access structure.
-
-**Status:** Completed.
-
-### Week 3 — NestJS backend foundation and database integration
-
-- NestJS application setup and project configuration.
-- Modules, controllers, providers, dependency injection, and module boundaries.
-- REST API fundamentals and CRUD operations.
-- PostgreSQL running through Docker Compose.
-- Prisma 7 setup with PostgreSQL driver adapter.
-- Database schema and initial migrations.
+- Initial authentication-related frontend foundation.
+- NestJS backend foundation.
+- PostgreSQL integration through Docker Compose.
+- Prisma database integration and initial data model.
 - Users and Organizations modules.
-- Organization membership and roles.
-- Database-backed Documents CRUD.
+- Documents CRUD API.
 - Organization-scoped document operations.
 - Pagination, filtering, and sorting.
-- Development database seed.
+- DTO-based request validation.
+- Standardized API error handling.
 
-**Next steps within this stage:**
+### Planned
 
-- DTOs and request validation with `class-validator` and `class-transformer`.
-- Global `ValidationPipe`.
-- Consistent API error response contract with stable error codes and human-readable messages.
-- Exception handling and correct HTTP error responses.
-- Password hashing and authentication endpoints.
-- Session management using Redis.
-- Authentication guards and organization context derived from the authenticated user.
-
-**Status:** In progress.
-
-### Week 4 — Full-stack integration and runtime infrastructure
-
-- Connect the Next.js frontend to the real NestJS API.
-- Replace remaining mock document data with backend requests.
-- Complete cookie-based authentication integration.
-- Implement authenticated server-side data access.
-- Add Redis to Docker Compose.
-- Add frontend and backend Dockerfiles.
-- Run frontend, backend, PostgreSQL, and Redis through Docker Compose.
-- Configure local development workflows and service health checks.
-
-**Status:** Planned.
-
-### Week 5 — Document file lifecycle
-
-- File upload API.
-- File validation and metadata handling.
-- Storage abstraction.
-- Local or external object storage integration.
-- Document processing lifecycle.
-- Text extraction from supported formats.
-- Processing status and error handling.
-
-**Status:** Planned.
-
-### Week 6 — Search and AI foundation
-
-- Embeddings generation.
-- Vector storage and similarity search.
-- Document chunking.
-- Retrieval-Augmented Generation (RAG).
-- Context-aware chat with documents.
-- LLM integration.
-
-**Status:** Planned.
-
-### Future stages — AI capabilities and production readiness
-
-- AI agents and tool calling.
-- MCP integration.
-- Advanced search and knowledge workflows.
-- Automated tests and end-to-end coverage.
-- Logging, monitoring, and observability.
-- Security hardening.
-- Deployment and production infrastructure.
-
-**Status:** Planned.
+- Complete authentication and authorization.
+- User profile and account management.
+- Organization and workspace management improvements.
+- Frontend-to-backend integration across application features.
+- Secure session management with Redis.
+- Document upload and file storage.
+- Document text extraction and processing.
+- Background processing workflows.
+- Embeddings and vector search.
+- RAG-based knowledge retrieval.
+- AI-powered chat.
+- Agent and MCP integrations.
+- Production deployment and observability.
 
 ---
 
-## Engineering Goals
+## Development Approach
 
-The project is also used to explore and apply practical engineering concepts:
+The project follows these principles:
 
-- Modular application architecture.
-- Clean separation of responsibilities.
-- Type-safe API contracts.
-- Database modeling and migrations.
-- Multi-tenant data isolation.
-- Authentication and authorization.
-- Session lifecycle and security.
-- Containerization and reproducible environments.
-- Error handling and validation.
-- Testing and maintainability.
-- AI integration and RAG architecture.
+- **Incremental development** — implement and verify one capability at a time.
+- **Clear separation of concerns** — keep frontend, backend, domain logic, and infrastructure responsibilities distinct.
+- **Type safety** — use TypeScript and explicit contracts.
+- **Modular architecture** — organize functionality around application domains.
+- **Secure defaults** — validate external input and avoid exposing sensitive implementation details.
+- **Maintainability** — prefer straightforward solutions over premature abstractions.
+- **Practical engineering** — introduce tools and technologies when there is a concrete architectural or product requirement.
 
-The roadmap may evolve as implementation decisions and technical requirements become clearer.
+---
+
+## Documentation
+
+- [`README.md`](README.md) — project overview, architecture, setup, and roadmap.
+- [`backend/README.md`](backend/README.md) — backend architecture, environment configuration, database setup, and development commands.
+
+Additional technical documentation will be introduced as the application grows and architectural decisions require a more detailed explanation.

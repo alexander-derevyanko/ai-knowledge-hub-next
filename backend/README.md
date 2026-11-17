@@ -1,32 +1,29 @@
 # AI Knowledge Hub — Backend
 
-NestJS backend application for AI Knowledge Hub.
+The backend is an independent REST API application for AI Knowledge Hub, built with NestJS, TypeScript, Prisma ORM, and PostgreSQL.
 
-The backend provides the REST API, business logic, database access, and authentication foundation for the AI Knowledge Hub platform.
+It provides the server-side foundation for application features, handling domain operations, business logic, and persistent data.
 
-The application is designed around modular architecture, organization-scoped data access, and independently deployable services.
+The backend is designed around modular architecture, clear separation of responsibilities, and incremental development.
 
-## Tech Stack
+> **Status:** The initial backend foundation is implemented, including database integration, user and organization modules, document metadata operations, request validation, and standardized error handling.
 
-- Node.js 24+
+---
+
+## Technology Stack
+
+- Node.js 24
 - NestJS 12
 - TypeScript
-- REST API
 - PostgreSQL 17
 - Prisma ORM 7
-- Prisma PostgreSQL driver adapter (`@prisma/adapter-pg`)
-- Docker Compose
+- `@prisma/adapter-pg`
+- `class-validator`
+- `class-transformer`
 - Vitest
 - Oxlint
-- Prettier
 
-### Planned
-
-- Redis for session storage.
-- `class-validator` and `class-transformer` for request validation.
-- Cookie-based authentication.
-- Automated integration and end-to-end tests.
-- File storage and document processing.
+The application uses ECMAScript modules (ESM) and TypeScript `NodeNext` module resolution.
 
 ---
 
@@ -34,180 +31,127 @@ The application is designed around modular architecture, organization-scoped dat
 
 The backend follows NestJS modular architecture.
 
+Its main responsibilities include:
+
+- Handling HTTP requests and responses.
+- Validating incoming data.
+- Implementing application and domain logic.
+- Managing persistent data through Prisma.
+- Enforcing organization-scoped data operations.
+- Providing shared infrastructure for error handling and database access.
+
+### Project Structure
+
 ```text
 backend/
 ├── prisma/
-│   ├── migrations/
-│   ├── schema.prisma
-│   └── seed.ts
+│   └── migrations/
 │
 ├── src/
-│   ├── health/
-│   ├── users/
-│   ├── organizations/
+│   ├── common/
+│   ├── database/
 │   ├── documents/
+│   │   └── dto/
+│   ├── health/
+│   ├── organizations/
+│   ├── users/
 │   ├── generated/
+│   │   └── prisma/
 │   ├── app.module.ts
 │   └── main.ts
 │
+├── test/
 ├── prisma7.config.ts
 ├── package.json
-├── tsconfig.json
 └── README.md
 ```
 
-`src/generated/prisma/` contains the generated Prisma client. It is excluded from Git and regenerated from the Prisma schema.
+### Module Responsibilities
 
-### Application modules
+| Module                | Responsibility                             |
+| --------------------- | ------------------------------------------ |
+| `HealthModule`        | Application health check                   |
+| `PrismaModule`        | Database connection and Prisma integration |
+| `UsersModule`         | User-related operations                    |
+| `OrganizationsModule` | Organizations and memberships              |
+| `DocumentsModule`     | Document metadata operations               |
+| `common/`             | Shared application infrastructure          |
 
-| Module                | Responsibility                                 |
-| --------------------- | ---------------------------------------------- |
-| `HealthModule`        | Application health check                       |
-| `UsersModule`         | User data access and user-related operations   |
-| `OrganizationsModule` | Organizations, memberships, and roles          |
-| `DocumentsModule`     | Document metadata and organization-scoped CRUD |
-
-### NestJS concepts used
-
-- Modules define application boundaries and encapsulate providers.
-- Controllers handle HTTP requests and responses.
-- Services contain application and business logic.
-- Dependency injection manages dependencies between providers.
-- PrismaService provides database access to application modules.
+Controllers handle HTTP concerns, DTOs validate incoming requests, services contain application logic, and Prisma provides database access.
 
 ---
 
-## API
+## Getting Started
 
-The global API prefix is:
+### Prerequisites
 
-```text
-/api
-```
+- Node.js 24.x
+- npm
+- Docker with Docker Compose
 
-The backend runs locally on port `3001` by default.
+PostgreSQL is provided through the repository's Docker Compose configuration.
 
-### Health
+### 1. Install Dependencies
 
-| Method | Endpoint      | Description  |
-| ------ | ------------- | ------------ |
-| `GET`  | `/api/health` | Health check |
-
-### Documents
-
-| Method   | Endpoint             | Description              |
-| -------- | -------------------- | ------------------------ |
-| `GET`    | `/api/documents`     | Get documents            |
-| `GET`    | `/api/documents/:id` | Get a document by ID     |
-| `POST`   | `/api/documents`     | Create document metadata |
-| `PATCH`  | `/api/documents/:id` | Update document metadata |
-| `DELETE` | `/api/documents/:id` | Delete document metadata |
-
-### Documents query parameters
-
-The list endpoint currently supports:
-
-| Parameter        | Description                          | Default     |
-| ---------------- | ------------------------------------ | ----------- |
-| `organizationId` | Organization scope                   | Required    |
-| `page`           | Page number                          | `1`         |
-| `limit`          | Number of records per page           | `10`        |
-| `category`       | Document category filter             | —           |
-| `status`         | Document status filter               | —           |
-| `sortBy`         | `createdAt`, `updatedAt`, or `title` | `createdAt` |
-| `sortOrder`      | `asc` or `desc`                      | `desc`      |
-
-The list response uses a `data` and `meta` structure:
-
-```json
-{
-  "data": [],
-  "meta": {
-    "total": 0,
-    "page": 1,
-    "limit": 10,
-    "totalPages": 0
-  }
-}
-```
-
-### Current implementation scope
-
-The Documents API manages document metadata in PostgreSQL.
-
-It does not yet implement:
-
-- Physical file upload.
-- Binary file storage.
-- Text extraction.
-- Embeddings generation.
-- AI processing.
-
-**Temporary organization scope:** until authentication and authorization are implemented, `organizationId` is supplied by the request. It is used to scope document queries and mutations, but it is not a security boundary. A client must not be trusted to choose its own organization scope in the final implementation.
-
-The planned implementation will derive the active organization context from the authenticated user and their membership.
-
----
-
-## Database
-
-PostgreSQL is the primary persistent database.
-
-It runs locally in Docker Compose from the repository root.
-
-### Prisma
-
-The project uses Prisma 7 with the PostgreSQL driver adapter.
-
-The Prisma schema is located at:
-
-```text
-prisma/schema.prisma
-```
-
-The Prisma configuration is located at:
-
-```text
-prisma7.config.ts
-```
-
-The generated client is located at:
-
-```text
-src/generated/prisma/
-```
-
-The generated client is not committed to Git.
-
-### Data models
-
-| Model                | Responsibility                                  |
-| -------------------- | ----------------------------------------------- |
-| `User`               | User account data                               |
-| `Organization`       | Organization data                               |
-| `OrganizationMember` | User membership and role within an organization |
-| `Document`           | Document metadata and organization association  |
-
-Organization roles:
-
-- `OWNER`
-- `ADMIN`
-- `MEMBER`
-
-Documents are associated with an organization. Database queries and mutations in the Documents service are scoped by `organizationId`.
-
-### Migrations
-
-Create and apply a development migration:
+From the repository root:
 
 ```bash
-npx prisma migrate dev --name migration_name
+cd backend
+npm install
 ```
 
-Check migration status:
+### 2. Configure Environment
+
+The local PostgreSQL environment configuration is maintained in the repository root.
+
+From the repository root:
 
 ```bash
-npx prisma migrate status
+cp .env.docker.example .env.docker
+```
+
+Configure the database credentials and connection settings in `.env.docker`.
+
+The backend uses the root environment configuration during local development.
+
+The `.env.docker` file contains local credentials and must not be committed.
+
+### 3. Start PostgreSQL
+
+From the repository root:
+
+```bash
+docker compose --env-file .env.docker up -d
+```
+
+Check the database container:
+
+```bash
+docker compose --env-file .env.docker ps
+```
+
+The default local configuration exposes PostgreSQL on:
+
+```text
+127.0.0.1:5432
+```
+
+The database uses a named Docker volume to persist data between container restarts.
+
+Stop the database:
+
+```bash
+docker compose --env-file .env.docker down
+```
+
+> **Warning:** Using `docker compose down -v` removes named volumes and deletes the local database data.
+
+### 4. Initialize the Database
+
+From `backend/`:
+
+```bash
+npx prisma migrate dev
 ```
 
 Generate the Prisma client:
@@ -216,218 +160,241 @@ Generate the Prisma client:
 npm run prisma:generate
 ```
 
-The build lifecycle also generates the Prisma client through the configured prebuild step.
-
-### Seed
-
-The seed script is located at:
+The Prisma client is generated under:
 
 ```text
-prisma/seed.ts
+src/generated/prisma/
 ```
 
-Run it from the `backend` directory:
+Generated files should not be edited manually or committed.
 
-```bash
-npx prisma db seed
-```
-
-The seed is idempotent and creates or reuses:
-
-- A demo organization with slug `ai-knowledge-hub`.
-- A demo user with email `demo@example.com`.
-- An `OWNER` membership connecting the user to the organization.
-
-The seed user's password hash is a placeholder and is not a valid login credential. Authentication implementation must introduce proper password hashing and credentials.
-
----
-
-## Local Development
-
-### Prerequisites
-
-- Node.js 24+
-- npm
-- Docker Desktop
-
-### 1. Configure environment variables
-
-Environment configuration is stored in the repository root.
-
-From the repository root:
-
-```bash
-cp .env.docker.example .env.docker
-```
-
-Configure the PostgreSQL credentials and `DATABASE_URL` in `.env.docker`.
-
-Do not commit `.env.docker`.
-
-The backend loads this environment file for local development and Prisma CLI operations.
-
-### 2. Start PostgreSQL
-
-Run from the repository root:
-
-```bash
-docker compose --env-file .env.docker up -d postgres
-```
-
-Check the service:
-
-```bash
-docker compose --env-file .env.docker ps
-```
-
-### 3. Install backend dependencies
-
-```bash
-cd backend
-npm install
-```
-
-### 4. Generate Prisma client
-
-```bash
-npm run prisma:generate
-```
-
-### 5. Apply database migrations
-
-```bash
-npx prisma migrate dev
-```
-
-### 6. Seed development data
-
-```bash
-npx prisma db seed
-```
-
-### 7. Start the backend
+### 5. Start the Backend
 
 ```bash
 npm run start:dev
 ```
 
-The API will be available at:
+The backend is available at:
 
 ```text
-http://localhost:3001/api
+http://localhost:3001
 ```
 
-Health check:
+The global API prefix is `/api`.
+
+---
+
+## Database
+
+PostgreSQL is the primary relational database used for persistent application data.
+
+Prisma ORM provides database access, schema management, and migrations.
+
+The current data model covers users, organizations, organization memberships, and document metadata.
+
+Database schema and relationships are defined in:
 
 ```text
-http://localhost:3001/api/health
+prisma/schema.prisma
+```
+
+### Prisma Commands
+
+Generate the client:
+
+```bash
+npm run prisma:generate
+```
+
+Create and apply a development migration:
+
+```bash
+npx prisma migrate dev --name <migration-name>
+```
+
+Apply existing migrations:
+
+```bash
+npx prisma migrate deploy
+```
+
+Open Prisma Studio:
+
+```bash
+npx prisma studio
+```
+
+### Development Seed
+
+The project includes development seed data for the initial user, organization, membership, and documents.
+
+The seed is designed to be idempotent.
+
+Seeded credentials are development data only. The placeholder password hash is not a valid login credential.
+
+---
+
+## API Overview
+
+The backend exposes a REST API under the `/api` prefix.
+
+Current functional areas include:
+
+- Health checks.
+- User-related operations.
+- Organization and membership operations.
+- Document metadata management.
+
+The Documents API currently supports CRUD operations, organization-scoped access, pagination, filtering, and sorting.
+
+Incoming requests are validated through DTOs and the global NestJS `ValidationPipe`.
+
+HTTP errors are handled through a global exception filter that provides a consistent response structure.
+
+The API implementation and DTOs are the source of truth for current request and response contracts.
+
+Detailed API documentation can be introduced separately as the number of endpoints and integrations grows.
+
+### Multi-Tenancy
+
+Organization-owned document operations are scoped by `organizationId`.
+
+At this stage, the organization identifier is supplied by the API client. This is an interim implementation.
+
+Once authentication and authorization are introduced, the backend must derive organization context from the authenticated user and verify membership server-side rather than trusting client-supplied identifiers.
+
+---
+
+## Development Commands
+
+Run commands from `backend/`.
+
+### Application
+
+Start in development mode:
+
+```bash
+npm run start:dev
+```
+
+Build the application:
+
+```bash
+npm run build
+```
+
+Run the production build:
+
+```bash
+npm run start:prod
+```
+
+### Code Quality
+
+Run lint:
+
+```bash
+npm run lint
+```
+
+Run TypeScript type checking:
+
+```bash
+npm run typecheck
+```
+
+Run tests:
+
+```bash
+npm test
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+Run tests with coverage:
+
+```bash
+npm run test:cov
+```
+
+Run end-to-end tests:
+
+```bash
+npm run test:e2e
+```
+
+### Formatting
+
+Format source files:
+
+```bash
+npm run format
+```
+
+Check formatting:
+
+```bash
+npm run format:check
+```
+
+### Database
+
+Generate Prisma client:
+
+```bash
+npm run prisma:generate
+```
+
+Create a migration:
+
+```bash
+npx prisma migrate dev --name <migration-name>
+```
+
+Open Prisma Studio:
+
+```bash
+npx prisma studio
 ```
 
 ---
 
-## Available Scripts
+## Current Limitations
 
-Run scripts from the `backend` directory.
+The backend currently provides the foundation for application data and document metadata management.
 
-| Command                   | Description                      |
-| ------------------------- | -------------------------------- |
-| `npm run start:dev`       | Start NestJS in development mode |
-| `npm run build`           | Build the backend                |
-| `npm run lint`            | Run Oxlint                       |
-| `npm run format`          | Format source files              |
-| `npm run format:check`    | Check formatting                 |
-| `npm run test`            | Run tests                        |
-| `npm run prisma:generate` | Generate Prisma client           |
+The following capabilities are not implemented yet:
 
-Prisma CLI commands such as `migrate dev`, `migrate status`, and `db seed` are executed with `npx prisma` from the `backend` directory.
+- Complete authentication and authorization.
+- Server-derived organization context.
+- Redis-backed session management.
+- Physical document upload and storage.
+- Document text extraction and processing.
+- Background processing.
+- Embedding generation and vector search.
+- RAG pipelines and LLM integrations.
+- AI chat and agent workflows.
+- Production deployment and observability.
 
----
-
-## Development Progress
-
-### Completed
-
-- NestJS application setup.
-- Global API prefix and health endpoint.
-- Modular architecture.
-- Controllers, providers, and dependency injection.
-- REST API fundamentals.
-- Initial CRUD implementation.
-- PostgreSQL Docker Compose service.
-- Prisma 7 integration with PostgreSQL.
-- Database schema and initial migrations.
-- Users and Organizations modules.
-- Organization membership and roles.
-- Database-backed Documents CRUD.
-- Organization-scoped document operations.
-- Pagination, filtering, and sorting.
-- Idempotent development seed.
-
-### Next steps
-
-1. **DTOs and validation**
-   - Request DTOs.
-   - `class-validator`.
-   - `class-transformer`.
-   - Global `ValidationPipe`.
-   - Query parameter transformation and validation.
-
-2. **Error handling**
-   - Global exception handling.
-   - Consistent error response structure.
-   - Stable machine-readable error codes.
-   - Human-readable error messages.
-   - Correct HTTP status codes.
-
-3. **Authentication**
-   - Password hashing.
-   - Registration and login.
-   - Cookie-based authentication.
-   - Session lifecycle.
-
-4. **Redis session storage**
-   - Redis service in Docker Compose.
-   - SessionStore abstraction.
-   - Redis-backed session implementation.
-   - Session TTL and invalidation.
-   - Logout.
-
-5. **Authorization and multi-tenancy**
-   - Authentication guards.
-   - Authenticated user context.
-   - Organization membership checks.
-   - Derive organization scope from authenticated context instead of request-supplied IDs.
-
-6. **Frontend integration**
-   - Connect the Next.js application to the backend.
-   - Integrate authentication cookies.
-   - Replace mock document data with API requests.
-   - Handle API errors consistently.
-
-7. **File lifecycle**
-   - File upload.
-   - File validation.
-   - Storage abstraction.
-   - Text extraction and processing status.
-
-8. **AI capabilities**
-   - Embeddings.
-   - Vector search.
-   - RAG.
-   - LLM integration.
+These capabilities will be introduced in future development milestones.
 
 ---
 
-## Engineering Principles
+## Planned Development
 
-- Keep modules focused and cohesive.
-- Keep controllers thin and move business logic into services.
-- Use dependency injection instead of manually constructing application dependencies.
-- Keep persistent business data in PostgreSQL.
-- Use Redis for ephemeral session data, not as a replacement for the primary database.
-- Scope tenant-owned data by organization.
-- Never expose password hashes through API responses.
-- Validate external input at the API boundary.
-- Return consistent, machine-readable API errors.
-- Keep infrastructure and storage details behind clear abstractions.
-- Prefer explicit, maintainable solutions over unnecessary abstractions.
+The backend roadmap includes:
+
+1. Authentication and authorization.
+2. Secure session management and Redis integration.
+3. Server-side organization context and membership verification.
+4. Document upload and storage.
+5. Document processing and text extraction.
+6. Background processing workflows.
+7. Embeddings and semantic search.
+8. RAG and AI-powered chat.
+9. Agent and MCP integrations.
+10. Production deployment and observability.
