@@ -122,7 +122,10 @@ export class DocumentsService {
     });
 
     if (!document) {
-      throw new NotFoundException('Document not found');
+      throw new NotFoundException({
+        code: 'DOCUMENT_NOT_FOUND',
+        message: 'Document not found',
+      });
     }
 
     return document;
@@ -166,7 +169,10 @@ export class DocumentsService {
     });
 
     if (result.count === 0) {
-      throw new NotFoundException('Document not found');
+      throw new NotFoundException({
+        code: 'DOCUMENT_NOT_FOUND',
+        message: 'Document not found',
+      });
     }
 
     return this.prisma.document.findFirst({
@@ -198,7 +204,10 @@ export class DocumentsService {
     });
 
     if (result.count === 0) {
-      throw new NotFoundException('Document not found');
+      throw new NotFoundException({
+        code: 'DOCUMENT_NOT_FOUND',
+        message: 'Document not found',
+      });
     }
   }
 }

@@ -14,11 +14,12 @@ import {
 import { DocumentsService } from './documents.service.js';
 import type {
   CreateDocumentInput,
-  DocumentSortField,
-  SortOrder,
+  FindAllDocumentsInput,
   UpdateDocumentInput,
 } from './documents.service.js';
-import { DocumentCategory, DocumentStatus } from '../generated/prisma/client.js';
+import { CreateDocumentDto } from './dto/create-document.dto.js';
+import { UpdateDocumentDto } from './dto/update-document.dto.js';
+import { FindAllDocumentsDto } from './dto/find-all-documents.dto.js';
 
 @Controller('documents')
 export class DocumentsController {
@@ -30,23 +31,12 @@ export class DocumentsController {
   }
 
   @Get()
-  findAll(
-    @Query('organizationId') organizationId: string,
-    @Query('page') page = '1',
-    @Query('limit') limit = '10',
-    @Query('category') category?: DocumentCategory,
-    @Query('status') status?: DocumentStatus,
-    @Query('sortBy') sortBy?: DocumentSortField,
-    @Query('sortOrder') sortOrder?: SortOrder,
-  ) {
-    return this.documentsService.findAll(organizationId, {
-      page: Number(page),
-      limit: Number(limit),
-      category,
-      status,
-      sortBy,
-      sortOrder,
-    });
+  findAll(@Query() query: FindAllDocumentsDto) {
+    const { organizationId, ...filters } = query;
+
+    const input: FindAllDocumentsInput = filters;
+
+    return this.documentsService.findAll(organizationId, input);
   }
 
   @Get(':id')
@@ -55,17 +45,31 @@ export class DocumentsController {
   }
 
   @Post()
-  createDocument(@Body() createDocumentDto: CreateDocumentInput) {
-    return this.documentsService.createDocument(createDocumentDto);
+  createDocument(@Body() dto: CreateDocumentDto) {
+    const input: CreateDocumentInput = {
+      title: dto.title,
+      category: dto.category,
+      type: dto.type,
+      fileName: dto.fileName,
+      mimeType: dto.mimeType,
+      sizeBytes: dto.sizeBytes,
+      organizationId: dto.organizationId,
+    };
+
+    return this.documentsService.createDocument(input);
   }
 
   @Patch(':id')
   updateDocument(
     @Param('id') id: string,
     @Query('organizationId') organizationId: string,
-    @Body() updateDocumentDto: UpdateDocumentInput,
+    @Body() dto: UpdateDocumentDto,
   ) {
-    return this.documentsService.updateDocument(id, organizationId, updateDocumentDto);
+    const input: UpdateDocumentInput = {
+      title: dto.title,
+    };
+
+    return this.documentsService.updateDocument(id, organizationId, input);
   }
 
   @Delete(':id')
