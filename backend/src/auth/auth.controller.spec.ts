@@ -15,7 +15,7 @@ describe('AuthController', () => {
   beforeEach(async () => {
     authService.register.mockReset();
 
-    const testingModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
         {
@@ -25,7 +25,7 @@ describe('AuthController', () => {
       ],
     }).compile();
 
-    authController = testingModule.get<AuthController>(AuthController);
+    authController = moduleRef.get<AuthController>(AuthController);
   });
 
   describe('register', () => {
