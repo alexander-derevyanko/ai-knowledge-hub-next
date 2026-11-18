@@ -144,4 +144,18 @@ export class UsersService {
 
     return user.memberships;
   }
+
+  async findByEmailForAuthentication(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    return this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        passwordHash: true,
+      },
+    });
+  }
 }
