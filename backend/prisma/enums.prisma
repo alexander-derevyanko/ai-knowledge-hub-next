@@ -2,6 +2,8 @@ enum OrganizationRole {
   OWNER
   ADMIN
   MEMBER
+
+  @@map("organization_role")
 }
 
 enum DocumentCategory {
@@ -11,6 +13,8 @@ enum DocumentCategory {
   PRODUCT
   BUSINESS
   SECURITY
+
+  @@map("document_category")
 }
 
 enum DocumentType {
@@ -18,10 +22,14 @@ enum DocumentType {
   DOCX
   TXT
   MD
+
+  @@map("document_type")
 }
 
 enum DocumentStatus {
   READY
   PROCESSING
   FAILED
+
+  @@map("document_status")
 }
