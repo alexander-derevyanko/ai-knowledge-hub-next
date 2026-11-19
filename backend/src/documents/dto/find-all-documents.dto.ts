@@ -1,13 +1,9 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsNotEmpty, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 import { DocumentCategory, DocumentStatus } from '../../generated/prisma/client.js';
 
 export class FindAllDocumentsDto {
-  @IsUUID()
-  @IsNotEmpty()
-  organizationId!: string;
-
   @IsOptional()
   @Type(() => Number)
   @IsInt()

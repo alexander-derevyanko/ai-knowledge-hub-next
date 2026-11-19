@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, IsString, IsUUID, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 
 import { DocumentCategory, DocumentType } from '../../generated/prisma/client.js';
 
@@ -26,8 +26,4 @@ export class CreateDocumentDto {
   @IsInt()
   @Min(1)
   sizeBytes!: number;
-
-  @IsUUID()
-  @IsNotEmpty()
-  organizationId!: string;
 }
