@@ -1,0 +1,12 @@
+model User {
+  id           String @id @default(uuid())
+  email        String @unique
+  name         String
+  passwordHash String
+
+  memberships       OrganizationMember[]
+  uploadedDocuments Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

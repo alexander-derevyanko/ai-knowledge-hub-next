@@ -1,0 +1,27 @@
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum DocumentCategory {
+  ARCHITECTURE
+  DEVELOPMENT
+  AI
+  PRODUCT
+  BUSINESS
+  SECURITY
+}
+
+enum DocumentType {
+  PDF
+  DOCX
+  TXT
+  MD
+}
+
+enum DocumentStatus {
+  READY
+  PROCESSING
+  FAILED
+}
