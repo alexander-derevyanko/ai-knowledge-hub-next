@@ -1,13 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
-import { createTestApp } from './helpers/create-test-app.js';
 import { SESSION_COOKIE_NAME } from '../src/auth/constants/session.constants.js';
+import { createTestApp } from './helpers/create-test-app.js';
 
 const SESSION_ID = 'test-session-id';
 const USER_ID = 'test-user-id';
 const ORGANIZATION_ID = 'test-organization-id';
 const SECOND_ORGANIZATION_ID = 'second-organization-id';
+const DOCUMENT_ID = 'test-document-id';
 
 const SESSION_DATA = {
   userId: USER_ID,
@@ -40,11 +41,17 @@ const CREATE_DOCUMENT_BODY = {
 };
 
 const CREATED_DOCUMENT = {
-  id: 'test-document-id',
+  id: DOCUMENT_ID,
   ...CREATE_DOCUMENT_BODY,
   status: 'READY',
   createdAt: new Date('2026-11-19T10:00:00.000Z'),
   updatedAt: new Date('2026-11-19T10:00:00.000Z'),
+};
+
+const SECOND_DOCUMENT = {
+  ...CREATED_DOCUMENT,
+  id: 'second-document-id',
+  title: 'Another document',
 };
 
 describe('Documents HTTP integration (e2e)', () => {
@@ -56,7 +63,13 @@ describe('Documents HTTP integration (e2e)', () => {
     },
     document: {
       create: vi.fn(),
+      findMany: vi.fn(),
+      count: vi.fn(),
+      findFirst: vi.fn(),
+      updateMany: vi.fn(),
+      deleteMany: vi.fn(),
     },
+    $transaction: vi.fn((operations: Promise<unknown>[]) => Promise.all(operations)),
   };
 
   const redisMock = {
@@ -72,7 +85,13 @@ describe('Documents HTTP integration (e2e)', () => {
     vi.clearAllMocks();
 
     prismaMock.user.findUnique.mockResolvedValue(AUTHENTICATED_USER);
+
     prismaMock.document.create.mockResolvedValue(CREATED_DOCUMENT);
+    prismaMock.document.findMany.mockResolvedValue([]);
+    prismaMock.document.count.mockResolvedValue(0);
+    prismaMock.document.findFirst.mockResolvedValue(CREATED_DOCUMENT);
+    prismaMock.document.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.document.deleteMany.mockResolvedValue({ count: 1 });
 
     redisMock.get.mockImplementation(async (key: string) => {
       if (key === `session:${SESSION_ID}`) {
@@ -267,6 +286,202 @@ describe('Documents HTTP integration (e2e)', () => {
           }),
         ]),
       );
+    });
+
+    it('should return documents belonging to the authenticated organization', async () => {
+      prismaMock.document.findMany.mockResolvedValue([CREATED_DOCUMENT, SECOND_DOCUMENT]);
+      prismaMock.document.count.mockResolvedValue(2);
+
+      const response = await request(app.getHttpServer())
+        .get('/api/documents')
+        .set('Cookie', sessionCookie)
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        data: [{ id: DOCUMENT_ID }, { id: SECOND_DOCUMENT.id }],
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
+
+      expect(prismaMock.document.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            organizationId: ORGANIZATION_ID,
+          },
+        }),
+      );
+
+      expect(prismaMock.document.count).toHaveBeenCalledWith({
+        where: {
+          organizationId: ORGANIZATION_ID,
+        },
+      });
+
+      expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('GET /api/documents/:id', () => {
+    it('should return a document belonging to the authenticated organization', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/documents/${DOCUMENT_ID}`)
+        .set('Cookie', sessionCookie)
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        id: DOCUMENT_ID,
+        title: CREATED_DOCUMENT.title,
+      });
+
+      expect(prismaMock.document.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            id: DOCUMENT_ID,
+            organizationId: ORGANIZATION_ID,
+          },
+        }),
+      );
+    });
+
+    it('should return DOCUMENT_NOT_FOUND when the document does not belong to the authenticated organization', async () => {
+      prismaMock.document.findFirst.mockResolvedValue(null);
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/documents/${DOCUMENT_ID}`)
+        .set('Cookie', sessionCookie)
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        code: 'DOCUMENT_NOT_FOUND',
+        message: 'Document not found',
+      });
+
+      expect(prismaMock.document.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            id: DOCUMENT_ID,
+            organizationId: ORGANIZATION_ID,
+          },
+        }),
+      );
+    });
+
+    it('should reject access to an organization the user does not belong to', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/documents/${DOCUMENT_ID}`)
+        .set('Cookie', sessionCookie)
+        .set('x-organization-id', SECOND_ORGANIZATION_ID)
+        .expect(403);
+
+      expect(response.body).toMatchObject({
+        statusCode: 403,
+        code: 'FORBIDDEN',
+      });
+
+      expect(prismaMock.document.findFirst).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('PATCH /api/documents/:id', () => {
+    it('should update a document belonging to the authenticated organization', async () => {
+      const updatedDocument = {
+        ...CREATED_DOCUMENT,
+        title: 'Updated document title',
+      };
+
+      prismaMock.document.findFirst.mockResolvedValue(updatedDocument);
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/documents/${DOCUMENT_ID}`)
+        .set('Cookie', sessionCookie)
+        .send({ title: 'Updated document title' })
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        id: DOCUMENT_ID,
+        title: 'Updated document title',
+      });
+
+      expect(prismaMock.document.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: DOCUMENT_ID,
+          organizationId: ORGANIZATION_ID,
+        },
+        data: {
+          title: 'Updated document title',
+        },
+      });
+    });
+
+    it('should return DOCUMENT_NOT_FOUND when updating a document outside the authenticated organization', async () => {
+      prismaMock.document.updateMany.mockResolvedValue({ count: 0 });
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/documents/${DOCUMENT_ID}`)
+        .set('Cookie', sessionCookie)
+        .send({ title: 'Updated document title' })
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        code: 'DOCUMENT_NOT_FOUND',
+        message: 'Document not found',
+      });
+
+      expect(prismaMock.document.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: DOCUMENT_ID,
+          organizationId: ORGANIZATION_ID,
+        },
+        data: {
+          title: 'Updated document title',
+        },
+      });
+
+      expect(prismaMock.document.findFirst).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('DELETE /api/documents/:id', () => {
+    it('should delete a document belonging to the authenticated organization', async () => {
+      await request(app.getHttpServer())
+        .delete(`/api/documents/${DOCUMENT_ID}`)
+        .set('Cookie', sessionCookie)
+        .expect(204);
+
+      expect(prismaMock.document.deleteMany).toHaveBeenCalledWith({
+        where: {
+          id: DOCUMENT_ID,
+          organizationId: ORGANIZATION_ID,
+        },
+      });
+    });
+
+    it('should return DOCUMENT_NOT_FOUND when deleting a document outside the authenticated organization', async () => {
+      prismaMock.document.deleteMany.mockResolvedValue({ count: 0 });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/documents/${DOCUMENT_ID}`)
+        .set('Cookie', sessionCookie)
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        code: 'DOCUMENT_NOT_FOUND',
+        message: 'Document not found',
+      });
+
+      expect(prismaMock.document.deleteMany).toHaveBeenCalledWith({
+        where: {
+          id: DOCUMENT_ID,
+          organizationId: ORGANIZATION_ID,
+        },
+      });
     });
   });
 });
