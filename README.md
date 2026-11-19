@@ -6,7 +6,7 @@ The project aims to evolve into an AI-powered knowledge workspace where users ca
 
 It is built as a long-term portfolio project with a focus on maintainable architecture, type safety, modular design, and production-oriented development practices.
 
-> **Status:** Active development. The frontend foundation and initial backend API are implemented. Authentication, document processing, and AI-powered capabilities are part of the upcoming development roadmap.
+**Status:** Active development. The Next.js frontend foundation and NestJS backend API are implemented. The backend includes session-based authentication, organization-scoped document operations, PostgreSQL persistence, and Redis-backed session management. Document upload, processing, and AI-powered capabilities remain on the roadmap.
 
 ---
 
@@ -41,6 +41,10 @@ The long-term goal is to connect these areas into a unified experience powered b
 - TypeScript
 - Prisma ORM
 - PostgreSQL
+- Redis
+- `class-validator`
+- `class-transformer`
+- Argon2id for password hashing
 
 ### Infrastructure and Development Tools
 
@@ -48,7 +52,7 @@ The long-term goal is to connect these areas into a unified experience powered b
 - Docker Compose
 - Vitest
 - Oxlint
-- ESLint / TypeScript tooling
+- TypeScript tooling
 
 Additional technologies will be introduced when required by specific project capabilities.
 
@@ -59,33 +63,39 @@ Additional technologies will be introduced when required by specific project cap
 AI Knowledge Hub consists of two independently runnable applications:
 
 - **Frontend** — Next.js application responsible for the user interface and frontend application logic.
-- **Backend** — NestJS REST API responsible for domain operations, business logic, and persistent data.
+- **Backend** — NestJS REST API responsible for authentication, domain operations, business logic, and persistent data.
 
-PostgreSQL is used as the primary relational database.
+PostgreSQL is the primary relational database for persistent application data. Redis is used as an ephemeral store for server-side sessions.
 
 The architecture follows a modular approach, separating application features, shared functionality, API responsibilities, and infrastructure concerns.
 
 ### High-Level Architecture
 
 ```text
-                    AI Knowledge Hub
-                           |
-             +-------------+-------------+
-             |                           |
-          Frontend                    Backend
-          Next.js                     NestJS
-             |                           |
-      +------+------+          +---------+---------+
-      |      |      |          |         |         |
-   Dashboard Docs   Chat      Users  Organizations Documents
-      |
-   Settings
-      |
-   Profile
-   (planned)
-                                      |
-                                  PostgreSQL
+                         AI Knowledge Hub
+                                |
+                 +--------------+--------------+
+                 |                             |
+              Frontend                       Backend
+              Next.js                        NestJS
+                 |                             |
+        +--------+--------+       +------------+-------------+
+        |        |        |       |            |             |
+     Dashboard Documents Chat   Auth         Users      Organizations
+        |                          |            |             |
+     Settings                  Security     Documents    Memberships
+        |                          |
+     Profile                  Redis Sessions
+     (planned)                     |
+                              PostgreSQL
 ```
+
+### Data and Infrastructure
+
+- **PostgreSQL** stores users, organizations, memberships, and document metadata.
+- **Redis** stores server-side session data with a configured time-to-live.
+- **Docker Compose** provides local PostgreSQL and Redis services.
+- The backend accesses PostgreSQL through Prisma and Redis through its Redis service.
 
 ### Repository Structure
 
@@ -158,11 +168,11 @@ Create the local Docker environment file:
 cp .env.docker.example .env.docker
 ```
 
-Configure the PostgreSQL credentials and connection settings in `.env.docker`.
+Configure the PostgreSQL and Redis connection settings and credentials in `.env.docker`.
 
 The environment file contains local development configuration and must not be committed.
 
-### 4. Start PostgreSQL
+### 4. Start Infrastructure
 
 From the repository root:
 
@@ -170,7 +180,9 @@ From the repository root:
 docker compose --env-file .env.docker up -d
 ```
 
-Check the container status:
+This starts the PostgreSQL and Redis services defined in Docker Compose.
+
+Check their status:
 
 ```bash
 docker compose --env-file .env.docker ps
@@ -191,6 +203,8 @@ Backend URL:
 http://localhost:3001
 ```
 
+The API is available under the `/api` prefix.
+
 ### 6. Start the Frontend
 
 From the repository root, in another terminal:
@@ -205,7 +219,7 @@ Frontend URL:
 http://localhost:3000
 ```
 
-For database migrations, Prisma configuration, and backend development commands, see [`backend/README.md`](backend/README.md).
+For database migrations, Prisma configuration, seed information, and backend development commands, see [`backend/README.md`](backend/README.md).
 
 ---
 
@@ -215,6 +229,8 @@ The project is being developed incrementally, with each milestone introducing a 
 
 ### Implemented
 
+#### Frontend
+
 - React and TypeScript frontend foundation.
 - Next.js App Router migration.
 - Application layouts and routing.
@@ -223,24 +239,34 @@ The project is being developed incrementally, with each milestone introducing a 
 - Document list and details views.
 - Loading, error, and not-found states.
 - Initial authentication-related frontend foundation.
+
+#### Backend
+
 - NestJS backend foundation.
 - PostgreSQL integration through Docker Compose.
+- Redis integration through Docker Compose.
 - Prisma database integration and initial data model.
 - Users and Organizations modules.
+- User registration and login.
+- Argon2id password hashing and verification.
+- Server-side session management using Redis.
+- HttpOnly session cookie with a seven-day TTL.
+- Logout and current-user endpoints.
+- Authentication guard for protected routes.
+- Server-derived organization context based on authenticated user memberships.
 - Documents CRUD API.
 - Organization-scoped document operations.
 - Pagination, filtering, and sorting.
 - DTO-based request validation.
 - Standardized API error handling.
+- Unit tests and HTTP integration tests for authentication and document operations.
 
 ### Planned
 
-- Complete authentication and authorization.
+- Frontend-to-backend integration across application features.
 - User profile and account management.
 - Organization and workspace management improvements.
-- Frontend-to-backend integration across application features.
-- Secure session management with Redis.
-- Document upload and file storage.
+- Physical document upload and file storage.
 - Document text extraction and processing.
 - Background processing workflows.
 - Embeddings and vector search.
@@ -259,7 +285,7 @@ The project follows these principles:
 - **Clear separation of concerns** — keep frontend, backend, domain logic, and infrastructure responsibilities distinct.
 - **Type safety** — use TypeScript and explicit contracts.
 - **Modular architecture** — organize functionality around application domains.
-- **Secure defaults** — validate external input and avoid exposing sensitive implementation details.
+- **Secure defaults** — validate external input, hash passwords, use server-side sessions, and avoid trusting client-supplied authorization context.
 - **Maintainability** — prefer straightforward solutions over premature abstractions.
 - **Practical engineering** — introduce tools and technologies when there is a concrete architectural or product requirement.
 
@@ -268,6 +294,6 @@ The project follows these principles:
 ## Documentation
 
 - [`README.md`](README.md) — project overview, architecture, setup, and roadmap.
-- [`backend/README.md`](backend/README.md) — backend architecture, environment configuration, database setup, and development commands.
+- [`backend/README.md`](backend/README.md) — backend architecture, environment configuration, database setup, authentication, and development commands.
 
 Additional technical documentation will be introduced as the application grows and architectural decisions require a more detailed explanation.
