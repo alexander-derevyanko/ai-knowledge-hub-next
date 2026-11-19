@@ -2,13 +2,12 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 
 import { RedisService } from '../redis/redis.service.js';
+import { SESSION_TTL_SECONDS } from './constants/session.constants.js';
 
 export interface SessionData {
   userId: string;
   createdAt: string;
 }
-
-const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 @Injectable()
 export class SessionService {

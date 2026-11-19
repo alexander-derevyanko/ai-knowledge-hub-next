@@ -2,6 +2,7 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 
 import { PasswordService } from '../security/password.service.js';
 import { UsersService } from '../users/users.service.js';
+import { SessionService } from './session.service.js';
 
 import { RegisterDto } from './dto/register.dto.js';
 
@@ -10,6 +11,7 @@ export class AuthService {
   constructor(
     private readonly passwordService: PasswordService,
     private readonly usersService: UsersService,
+    private readonly sessionService: SessionService,
   ) {}
 
   async register(input: RegisterDto) {
@@ -33,6 +35,54 @@ export class AuthService {
       organizationName: input.organizationName,
       organizationSlug,
     });
+  }
+
+  async login(email: string, password: string) {
+    const user = await this.validateCredentials(email, password);
+
+    const sessionId = await this.sessionService.create(user.id);
+
+    return {
+      user,
+      sessionId,
+    };
+  }
+
+  async getCurrentUser(sessionId?: string) {
+    if (!sessionId) {
+      throw new UnauthorizedException({
+        code: 'UNAUTHORIZED',
+        message: 'Authentication required',
+      });
+    }
+
+    const session = await this.sessionService.find(sessionId);
+
+    if (!session) {
+      throw new UnauthorizedException({
+        code: 'INVALID_SESSION',
+        message: 'Session is invalid or expired',
+      });
+    }
+
+    const user = await this.usersService.findAuthenticatedUser(session.userId);
+
+    if (!user) {
+      throw new UnauthorizedException({
+        code: 'INVALID_SESSION',
+        message: 'Session is invalid or expired',
+      });
+    }
+
+    return user;
+  }
+
+  async logout(sessionId?: string): Promise<void> {
+    if (!sessionId) {
+      return;
+    }
+
+    await this.sessionService.destroy(sessionId);
   }
 
   async validateCredentials(email: string, password: string) {
