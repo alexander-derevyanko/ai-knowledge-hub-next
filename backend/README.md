@@ -49,17 +49,23 @@ Its main responsibilities include:
 ```text
 backend/
 ├── prisma/
-│   └── migrations/
+│   ├── migrations/
+│   ├── schema.prisma
+│   ├── enums.prisma
+│   ├── user.prisma
+│   ├── organization.prisma
+│   ├── document.prisma
+│   └── seed.ts
 │
 ├── src/
 │   ├── auth/
 │   │   ├── constants/
 │   │   ├── decorators/
 │   │   ├── dto/
-│   │   └── guards/
+│   │   ├── guards/
 │   │   └── types/
 │   ├── common/
-│   │   └── filters/
+│   │   ├── filters/
 │   │   └── interfaces/
 │   ├── database/
 │   ├── documents/
@@ -214,7 +220,7 @@ cp .env.docker.example .env.docker
 
 Configure the database credentials and connection settings, as well as the Redis connection URL, in `.env.docker`.
 
-The backend loads this environment configuration during local development.
+The backend and Prisma configuration load this environment configuration during local development.
 
 The `.env.docker` file contains local credentials and must not be committed.
 
@@ -254,16 +260,22 @@ Run commands from `backend/`.
 Apply development migrations:
 
 ```bash
-npx prisma migrate dev
+npm run prisma:migrate:dev
 ```
 
-Generate the Prisma client:
+Generate the Prisma Client:
 
 ```bash
 npm run prisma:generate
 ```
 
-The Prisma client is generated under:
+Populate development data:
+
+```bash
+npm run prisma:seed
+```
+
+The Prisma Client is generated under:
 
 ```text
 src/generated/prisma/
@@ -291,7 +303,7 @@ The global API prefix is `/api`.
 
 PostgreSQL is the primary relational database used for persistent application data.
 
-Prisma ORM provides database access, schema management, and migrations.
+Prisma ORM provides database access, schema management, migrations, and client generation.
 
 The current data model covers:
 
@@ -300,43 +312,118 @@ The current data model covers:
 - Organization memberships
 - Document metadata
 
-Database schema and relationships are defined in:
+### Prisma Schema Organization
+
+The Prisma schema uses a multi-file structure:
 
 ```text
-prisma/schema.prisma
+prisma/
+├── schema.prisma
+├── enums.prisma
+├── user.prisma
+├── organization.prisma
+├── document.prisma
+├── seed.ts
+└── migrations/
 ```
+
+Responsibilities:
+
+- `schema.prisma` — Prisma Client generator and datasource configuration.
+- `enums.prisma` — shared database enums.
+- `user.prisma` — user model.
+- `organization.prisma` — organization and membership models.
+- `document.prisma` — document metadata model.
+- `seed.ts` — development seed data.
+- `migrations/` — versioned database migrations.
+
+The Prisma configuration is maintained in `prisma7.config.ts`.
+
+### Database Naming Conventions
+
+The project uses separate naming conventions for Prisma's application-level API and physical PostgreSQL objects.
+
+| Database concept | Prisma naming       | PostgreSQL naming             |
+| ---------------- | ------------------- | ----------------------------- |
+| Models / tables  | PascalCase singular | lowercase plural `snake_case` |
+| Fields / columns | `camelCase`         | `snake_case`                  |
+| Enum types       | PascalCase          | lowercase `snake_case`        |
+| Enum values      | UPPERCASE           | UPPERCASE                     |
+
+Examples:
+
+| Prisma               | PostgreSQL             |
+| -------------------- | ---------------------- |
+| `User`               | `users`                |
+| `OrganizationMember` | `organization_members` |
+| `passwordHash`       | `password_hash`        |
+| `createdAt`          | `created_at`           |
+| `OrganizationRole`   | `organization_role`    |
+
+Prisma mapping attributes connect these naming conventions:
+
+- `@map("column_name")` maps a Prisma field to a physical PostgreSQL column.
+- `@@map("table_name")` maps a Prisma model to a physical PostgreSQL table.
+- `@@map("enum_name")` maps a Prisma enum to a physical PostgreSQL enum type.
+
+This allows application code to use idiomatic TypeScript naming while keeping database objects consistent with PostgreSQL conventions.
 
 ### Prisma Commands
 
-Generate the client:
+Run commands from `backend/`.
+
+| Command                             | Purpose                                               |
+| ----------------------------------- | ----------------------------------------------------- |
+| `npm run prisma:generate`           | Generate Prisma Client                                |
+| `npm run prisma:format`             | Format Prisma schema files                            |
+| `npm run prisma:validate`           | Validate the Prisma schema                            |
+| `npm run prisma:migrate:dev`        | Create and apply a development migration              |
+| `npm run prisma:migrate:dev:create` | Create a migration without applying it                |
+| `npm run prisma:migrate:deploy`     | Apply pending migrations in deployment environments   |
+| `npm run prisma:migrate:status`     | Check migration status                                |
+| `npm run prisma:seed`               | Execute the development seed                          |
+| `npm run prisma:studio`             | Open Prisma Studio                                    |
+| `npm run prisma:migrate:reset`      | Reset the development database and reapply migrations |
+
+### Creating a Migration
+
+For a normal development migration:
 
 ```bash
-npm run prisma:generate
+npm run prisma:migrate:dev -- --name add_new_feature
 ```
 
-Create and apply a development migration:
+Prisma creates a migration based on the schema changes and applies it to the development database.
+
+When a migration needs manual SQL review or editing, create it without applying it:
 
 ```bash
-npx prisma migrate dev --name <migration-name>
+npm run prisma:migrate:dev:create -- --name add_new_feature
 ```
 
-Apply existing migrations:
+Review the generated SQL under `prisma/migrations/` before applying it.
+
+After reviewing or editing the migration:
 
 ```bash
-npx prisma migrate deploy
+npm run prisma:migrate:dev
 ```
 
-Open Prisma Studio:
+For deployment environments, apply already-created migrations with:
 
 ```bash
-npx prisma studio
+npm run prisma:migrate:deploy
 ```
+
+Do not use `migrate dev` as a production deployment command.
+
+**Warning:** `prisma:migrate:reset` is destructive. It drops and recreates the development database, reapplies migrations, and runs the seed. Do not use it when existing local data must be preserved.
 
 ### Development Seed
 
 The project includes development seed data for the initial user, organization, membership, and documents.
 
-The seed is designed to be idempotent.
+The seed is designed to be idempotent, so it can be executed repeatedly without creating duplicate seed records.
 
 Seeded credentials are development data only. The placeholder password hash is not a valid login credential and cannot be used to authenticate through the login endpoint.
 
@@ -406,30 +493,14 @@ Unexpected internal errors are returned without exposing implementation details.
 
 The backend uses Vitest for unit and HTTP integration tests.
 
-HTTP integration tests run the NestJS application and exercise real HTTP endpoints. Prisma and Redis are replaced with test doubles so the tests do not require live infrastructure.
+### Unit Tests
 
-The current HTTP integration coverage includes:
-
-- Authentication registration, login, current-user retrieval, and logout.
-- Session cookie lifecycle.
-- Invalid credentials and validation errors.
-- Documents CRUD operations.
-- Authentication requirements for protected document endpoints.
-- Organization membership validation and tenant isolation.
-- `DOCUMENT_NOT_FOUND` behavior for inaccessible or missing documents.
-
-Run all HTTP integration tests:
-
-```bash
-npm run test:e2e
-```
-
-The current integration test suite contains 28 tests.
+Unit tests verify individual services, guards, and other components in isolation using test doubles where appropriate.
 
 Run unit tests:
 
 ```bash
-npm test
+npm run test
 ```
 
 Run tests in watch mode:
@@ -443,6 +514,32 @@ Run tests with coverage:
 ```bash
 npm run test:cov
 ```
+
+The current unit test suite contains 59 tests.
+
+### HTTP Integration Tests
+
+HTTP integration tests run the NestJS application and exercise real HTTP endpoints. Prisma and Redis are replaced with test doubles, so the tests do not require live infrastructure.
+
+The current HTTP integration coverage includes:
+
+- Authentication registration, login, current-user retrieval, and logout.
+- Session cookie lifecycle.
+- Invalid credentials and validation errors.
+- Documents CRUD operations.
+- Authentication requirements for protected document endpoints.
+- Organization membership validation and tenant isolation.
+- `DOCUMENT_NOT_FOUND` behavior for inaccessible or missing documents.
+
+Run the HTTP integration tests:
+
+```bash
+npm run test:e2e
+```
+
+The current HTTP integration test suite contains 28 tests.
+
+**Terminology note:** The test files use the `*.e2e-spec.ts` naming convention and the `test:e2e` script, but the current tests are HTTP integration tests because PostgreSQL and Redis are mocked. Full end-to-end tests against real PostgreSQL and Redis infrastructure remain a future testing milestone.
 
 ---
 
@@ -500,22 +597,46 @@ npm run format:check
 
 ### Database
 
-Generate Prisma client:
+Validate the Prisma schema:
+
+```bash
+npm run prisma:validate
+```
+
+Generate Prisma Client:
 
 ```bash
 npm run prisma:generate
 ```
 
-Create a migration:
+Check migration status:
 
 ```bash
-npx prisma migrate dev --name <migration-name>
+npm run prisma:migrate:status
+```
+
+Apply development migrations:
+
+```bash
+npm run prisma:migrate:dev
+```
+
+Apply existing migrations in deployment environments:
+
+```bash
+npm run prisma:migrate:deploy
+```
+
+Run the development seed:
+
+```bash
+npm run prisma:seed
 ```
 
 Open Prisma Studio:
 
 ```bash
-npx prisma studio
+npm run prisma:studio
 ```
 
 ---
@@ -536,6 +657,7 @@ The following capabilities are not implemented yet:
 - RAG pipelines and LLM integrations.
 - AI chat and agent workflows.
 - MCP integrations.
+- Full end-to-end tests against real PostgreSQL and Redis infrastructure.
 - Production deployment and observability.
 
 The current authentication implementation provides server-side sessions and protected API routes. Additional security measures and production hardening may be introduced as deployment requirements become clearer.
@@ -554,4 +676,5 @@ The backend roadmap includes:
 6. Embeddings and semantic search.
 7. RAG and AI-powered chat.
 8. Agent and MCP integrations.
-9. Production deployment and observability.
+9. Full end-to-end testing with real infrastructure.
+10. Production deployment and observability.

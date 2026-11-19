@@ -76,18 +76,18 @@ The architecture follows a modular approach, separating application features, sh
                                 |
                  +--------------+--------------+
                  |                             |
-              Frontend                       Backend
-              Next.js                        NestJS
+              Frontend                      Backend
+              Next.js                       NestJS
                  |                             |
-        +--------+--------+       +------------+-------------+
-        |        |        |       |            |             |
-     Dashboard Documents Chat   Auth         Users      Organizations
-        |                          |            |             |
-     Settings                  Security     Documents    Memberships
-        |                          |
-     Profile                  Redis Sessions
-     (planned)                     |
-                              PostgreSQL
+       +---------+---------+       +-----------+------------+
+       |         |         |       |           |            |
+   Dashboard Documents  Chat     Auth        Users    Organizations
+       |                             |           |            |
+   Settings                      Security    Documents   Memberships
+       |                             |
+   Profile                    Redis Sessions
+   (planned)                        |
+                               PostgreSQL
 ```
 
 ### Data and Infrastructure
@@ -103,8 +103,17 @@ The architecture follows a modular approach, separating application features, sh
 ai-knowledge-hub-next/
 ├── backend/
 │   ├── prisma/
+│   │   ├── migrations/
+│   │   ├── schema.prisma
+│   │   ├── enums.prisma
+│   │   ├── user.prisma
+│   │   ├── organization.prisma
+│   │   ├── document.prisma
+│   │   └── seed.ts
 │   ├── src/
 │   ├── test/
+│   ├── prisma7.config.ts
+│   ├── package.json
 │   └── README.md
 │
 ├── src/
@@ -120,7 +129,7 @@ ai-knowledge-hub-next/
 └── README.md
 ```
 
-The frontend uses feature-oriented organization, while the backend follows NestJS modular architecture.
+The frontend uses feature-oriented organization, while the backend follows NestJS modular architecture. The Prisma schema is split into multiple files to keep database models and enums organized by domain.
 
 For backend-specific architecture and setup instructions, see [`backend/README.md`](backend/README.md).
 
@@ -188,12 +197,24 @@ Check their status:
 docker compose --env-file .env.docker ps
 ```
 
-### 5. Start the Backend
+### 5. Initialize the Database
 
-In a separate terminal:
+From the backend directory:
 
 ```bash
 cd backend
+npm run prisma:migrate:dev
+npm run prisma:generate
+npm run prisma:seed
+```
+
+Existing migrations are applied to the local development database. The Prisma Client is generated, and the development seed populates initial data.
+
+### 6. Start the Backend
+
+From `backend/`, in a separate terminal:
+
+```bash
 npm run start:dev
 ```
 
@@ -205,7 +226,7 @@ http://localhost:3001
 
 The API is available under the `/api` prefix.
 
-### 6. Start the Frontend
+### 7. Start the Frontend
 
 From the repository root, in another terminal:
 
@@ -245,7 +266,9 @@ The project is being developed incrementally, with each milestone introducing a 
 - NestJS backend foundation.
 - PostgreSQL integration through Docker Compose.
 - Redis integration through Docker Compose.
-- Prisma database integration and initial data model.
+- Prisma database integration with a multi-file schema.
+- PostgreSQL naming conventions using lowercase plural `snake_case` table names, `snake_case` columns, and mapped enum types.
+- Database migrations and idempotent development seed.
 - Users and Organizations modules.
 - User registration and login.
 - Argon2id password hashing and verification.
