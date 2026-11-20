@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
@@ -13,6 +14,8 @@ import type { ApiErrorResponse } from '../interfaces/api-error-response.interfac
 @Catch()
 @Injectable()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
@@ -22,6 +25,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const statusCode =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      const request = context.getRequest<{ method?: string; url?: string }>();
+      const requestInfo = `${request.method ?? 'UNKNOWN'} ${request.url ?? 'UNKNOWN'}`;
+
+      if (exception instanceof Error) {
+        this.logger.error(`${requestInfo} - ${exception.message}`, exception.stack);
+      } else {
+        this.logger.error(`${requestInfo} - Unknown exception: ${String(exception)}`);
+      }
+    }
 
     const body = this.createErrorResponse(exception, statusCode);
 
