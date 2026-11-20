@@ -8,12 +8,12 @@ import { AuthService } from './auth.service.js';
 import { SessionService } from './session.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 
-const REGISTER_DTO: RegisterDto = {
+const REGISTER_DTO = {
   name: 'John Doe',
   email: 'john@example.com',
   password: 'password123',
   organizationName: 'Acme Inc',
-};
+} satisfies RegisterDto;
 
 const CREATED_USER = {
   id: 'user-id',
@@ -83,13 +83,15 @@ describe('AuthService', () => {
 
       expect(passwordService.hash).toHaveBeenCalledWith(REGISTER_DTO.password);
 
-      expect(usersService.createWithOrganization).toHaveBeenCalledWith({
-        email: REGISTER_DTO.email,
-        name: REGISTER_DTO.name,
-        passwordHash,
-        organizationName: REGISTER_DTO.organizationName,
-        organizationSlug: 'acme-inc',
-      });
+      expect(usersService.createWithOrganization).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: REGISTER_DTO.email,
+          name: REGISTER_DTO.name,
+          passwordHash,
+          organizationName: REGISTER_DTO.organizationName,
+          organizationSlug: expect.stringMatching(/^acme-inc-[a-f0-9]{8}$/),
+        }),
+      );
 
       expect(sessionService.create).toHaveBeenCalledWith(CREATED_USER.id);
 
@@ -99,6 +101,45 @@ describe('AuthService', () => {
       });
 
       expect(result.user).not.toHaveProperty('passwordHash');
+    });
+
+    it('should generate different slugs for organizations with the same name', async () => {
+      usersService.findByEmailForAuthentication.mockResolvedValue(null);
+      passwordService.hash.mockResolvedValue('hashed-password');
+      usersService.createWithOrganization.mockResolvedValue(CREATED_USER);
+      sessionService.create.mockResolvedValue(SESSION_ID);
+
+      await authService.register(REGISTER_DTO);
+      await authService.register({
+        ...REGISTER_DTO,
+        email: 'another@example.com',
+      });
+
+      const firstSlug = usersService.createWithOrganization.mock.calls[0][0].organizationSlug;
+      const secondSlug = usersService.createWithOrganization.mock.calls[1][0].organizationSlug;
+
+      expect(firstSlug).toMatch(/^acme-inc-[a-f0-9]{8}$/);
+      expect(secondSlug).toMatch(/^acme-inc-[a-f0-9]{8}$/);
+      expect(firstSlug).not.toBe(secondSlug);
+    });
+
+    it('should use a fallback slug if organization name has no Latin letters or digits', async () => {
+      usersService.findByEmailForAuthentication.mockResolvedValue(null);
+      passwordService.hash.mockResolvedValue('hashed-password');
+      usersService.createWithOrganization.mockResolvedValue(CREATED_USER);
+      sessionService.create.mockResolvedValue(SESSION_ID);
+
+      await authService.register({
+        ...REGISTER_DTO,
+        organizationName: 'Компания',
+      });
+
+      expect(usersService.createWithOrganization).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationName: 'Компания',
+          organizationSlug: expect.stringMatching(/^organization-[a-f0-9]{8}$/),
+        }),
+      );
     });
 
     it('should not create a user or session if email already exists', async () => {

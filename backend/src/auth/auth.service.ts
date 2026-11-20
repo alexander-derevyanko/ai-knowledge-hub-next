@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { PasswordService } from '../security/password.service.js';
@@ -119,10 +121,15 @@ export class AuthService {
   }
 
   private createOrganizationSlug(name: string): string {
-    return name
+    const baseSlug = name
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
+
+    const slugPrefix = baseSlug || 'organization';
+    const uniqueSuffix = randomUUID().slice(0, 8);
+
+    return `${slugPrefix}-${uniqueSuffix}`;
   }
 }
