@@ -6,7 +6,7 @@ The project aims to evolve into an AI-powered knowledge workspace where users ca
 
 It is built as a long-term portfolio project with a focus on maintainable architecture, type safety, modular design, and production-oriented development practices.
 
-**Status:** Active development. The Next.js frontend foundation and NestJS backend API are implemented. The backend includes session-based authentication, organization-scoped document operations, PostgreSQL persistence, and Redis-backed session management. Document upload, processing, and AI-powered capabilities remain on the roadmap.
+**Status:** Active development. The Next.js frontend foundation and NestJS backend API are implemented. The backend includes session-based authentication, organization-scoped document operations, PostgreSQL persistence, and Redis-backed session management. Frontend authentication is integrated with the backend, including registration with automatic login, login, logout, and protected application routes. Document upload, processing, and AI-powered capabilities remain on the roadmap.
 
 ---
 
@@ -169,7 +169,7 @@ npm install
 cd ..
 ```
 
-### 3. Configure Environment
+### 3. Configure Infrastructure Environment
 
 Create the local Docker environment file:
 
@@ -181,7 +181,25 @@ Configure the PostgreSQL and Redis connection settings and credentials in `.env.
 
 The environment file contains local development configuration and must not be committed.
 
-### 4. Start Infrastructure
+### 4. Configure Frontend Environment
+
+Create `.env.local` in the repository root:
+
+```bash
+touch .env.local
+```
+
+Add the backend API URL:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
+
+The frontend uses this URL to communicate with the NestJS API.
+
+The `.env.local` file contains local development configuration and must not be committed.
+
+### 5. Start Infrastructure
 
 From the repository root:
 
@@ -197,7 +215,7 @@ Check their status:
 docker compose --env-file .env.docker ps
 ```
 
-### 5. Initialize the Database
+### 6. Initialize the Database
 
 From the backend directory:
 
@@ -210,7 +228,7 @@ npm run prisma:seed
 
 Existing migrations are applied to the local development database. The Prisma Client is generated, and the development seed populates initial data.
 
-### 6. Start the Backend
+### 7. Start the Backend
 
 From `backend/`, in a separate terminal:
 
@@ -226,7 +244,7 @@ http://localhost:3001
 
 The API is available under the `/api` prefix.
 
-### 7. Start the Frontend
+### 8. Start the Frontend
 
 From the repository root, in another terminal:
 
@@ -259,7 +277,13 @@ The project is being developed incrementally, with each milestone introducing a 
 - Dashboard, Documents, Chat, and Settings UI foundations.
 - Document list and details views.
 - Loading, error, and not-found states.
-- Initial authentication-related frontend foundation.
+- User registration and login flows integrated with the NestJS backend.
+- Automatic login after successful registration.
+- Logout with server-side session invalidation.
+- HttpOnly session cookie handling.
+- Server-side current-user retrieval through the backend API.
+- Protected application routes with Next.js Proxy and server-side authentication checks.
+- Frontend authentication API integration with credentialed requests.
 
 #### Backend
 
@@ -270,11 +294,12 @@ The project is being developed incrementally, with each milestone introducing a 
 - PostgreSQL naming conventions using lowercase plural `snake_case` table names, `snake_case` columns, and mapped enum types.
 - Database migrations and idempotent development seed.
 - Users and Organizations modules.
-- User registration and login.
+- User registration with automatic session creation and login.
+- Login and logout endpoints.
 - Argon2id password hashing and verification.
 - Server-side session management using Redis.
 - HttpOnly session cookie with a seven-day TTL.
-- Logout and current-user endpoints.
+- Current-user endpoint.
 - Authentication guard for protected routes.
 - Server-derived organization context based on authenticated user memberships.
 - Documents CRUD API.
@@ -286,7 +311,7 @@ The project is being developed incrementally, with each milestone introducing a 
 
 ### Planned
 
-- Frontend-to-backend integration across application features.
+- Frontend-to-backend integration for Documents, Chat, Settings, and remaining application features (authentication integration is implemented).
 - User profile and account management.
 - Organization and workspace management improvements.
 - Physical document upload and file storage.
@@ -308,15 +333,4 @@ The project follows these principles:
 - **Clear separation of concerns** — keep frontend, backend, domain logic, and infrastructure responsibilities distinct.
 - **Type safety** — use TypeScript and explicit contracts.
 - **Modular architecture** — organize functionality around application domains.
-- **Secure defaults** — validate external input, hash passwords, use server-side sessions, and avoid trusting client-supplied authorization context.
-- **Maintainability** — prefer straightforward solutions over premature abstractions.
-- **Practical engineering** — introduce tools and technologies when there is a concrete architectural or product requirement.
-
----
-
-## Documentation
-
-- [`README.md`](README.md) — project overview, architecture, setup, and roadmap.
-- [`backend/README.md`](backend/README.md) — backend architecture, environment configuration, database setup, authentication, and development commands.
-
-Additional technical documentation will be introduced as the application grows and architectural decisions require a more detailed explanation.
+- **Secure defaults** — validate external input, hash

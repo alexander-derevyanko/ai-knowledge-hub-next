@@ -6,7 +6,7 @@ It provides the server-side foundation for application features, handling authen
 
 The backend is designed around modular architecture, clear separation of responsibilities, and incremental development.
 
-**Status:** The backend foundation is implemented, including database integration, user and organization management, session-based authentication, Redis-backed sessions, organization-scoped document operations, request validation, and standardized error handling.
+**Status:** The backend foundation is implemented, including database integration, user and organization management, session-based authentication, Redis-backed sessions, organization-scoped document operations, request validation, and standardized error handling. The Next.js frontend is integrated with the backend authentication API.
 
 ---
 
@@ -120,14 +120,15 @@ The session identifier does not contain user information or authorization claims
 
 ### Authentication Flow
 
-1. A user registers with name, email, password, and organization name.
+1. A user submits name, email, password, and organization name during registration.
 2. The backend hashes the password using Argon2id.
 3. The backend creates the user, organization, and OWNER membership.
-4. The user logs in with email and password.
-5. The backend verifies the password and creates a session in Redis.
-6. The session identifier is sent to the browser through an HttpOnly cookie.
-7. Protected endpoints resolve the session and load the authenticated user.
-8. Logout deletes the Redis session and clears the cookie.
+4. After successful registration, the backend automatically creates a Redis session.
+5. The session identifier is sent to the browser through an HttpOnly cookie.
+6. Returning users can log in with email and password. The backend verifies the password and creates a new session in Redis.
+7. Protected endpoints resolve the session through Redis and load the authenticated user from PostgreSQL.
+8. The frontend can retrieve the current authenticated user through the `/api/auth/me` endpoint.
+9. Logout deletes the Redis session and clears the session cookie.
 
 ### Session Cookie
 
@@ -145,14 +146,16 @@ The session data is stored in Redis with a matching seven-day TTL.
 
 All endpoints use the global `/api` prefix.
 
-| Method | Endpoint             | Description                                      |
-| ------ | -------------------- | ------------------------------------------------ |
-| `POST` | `/api/auth/register` | Register a user and create an organization       |
-| `POST` | `/api/auth/login`    | Verify credentials and create a session          |
-| `GET`  | `/api/auth/me`       | Retrieve the currently authenticated user        |
-| `POST` | `/api/auth/logout`   | Destroy the current session and clear the cookie |
+| Method | Endpoint             | Description                                                       |
+| ------ | -------------------- | ----------------------------------------------------------------- |
+| `POST` | `/api/auth/register` | Register a user, create an organization, and automatically log in |
+| `POST` | `/api/auth/login`    | Verify credentials and create a session                           |
+| `GET`  | `/api/auth/me`       | Retrieve the currently authenticated user                         |
+| `POST` | `/api/auth/logout`   | Destroy the current session and clear the cookie                  |
 
-Registration and login are separate operations. Registering an account does not automatically create a login session.
+Registration automatically creates an authenticated session after the user and organization have been created successfully.
+
+Login remains available for returning users.
 
 ### Route Protection
 
@@ -167,6 +170,27 @@ The guard:
 5. Rejects requests with missing or invalid sessions.
 
 The `CurrentUser` decorator provides the authenticated user context to controllers.
+
+### Frontend Integration
+
+The Next.js frontend communicates with the backend using the configured API URL:
+
+```text
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
+
+The backend enables credentialed CORS requests from the configured frontend origin.
+
+The CORS configuration allows credentials and explicitly defines the permitted request headers. Wildcard origins are not used with credentialed requests.
+
+The frontend uses two communication patterns:
+
+- **Browser-to-backend requests:** Registration, login, and logout are initiated from Client Components. Requests include browser credentials so the backend can set and clear the HttpOnly session cookie.
+- **Server-to-backend requests:** Server Components retrieve the current user by forwarding the incoming session cookie to the backend. User-specific requests are not cached.
+
+The frontend uses Next.js Proxy for an initial session-cookie presence check on protected routes. The protected application layout performs the authoritative authentication check by requesting the current user from the backend.
+
+The backend remains responsible for validating sessions and enforcing authorization through `AuthGuard`.
 
 ---
 
@@ -668,7 +692,7 @@ The current authentication implementation provides server-side sessions and prot
 
 The backend roadmap includes:
 
-1. Frontend-to-backend integration.
+1. Frontend-to-backend integration for remaining application features.
 2. User profile and account management.
 3. Document upload and storage.
 4. Document processing and text extraction.
