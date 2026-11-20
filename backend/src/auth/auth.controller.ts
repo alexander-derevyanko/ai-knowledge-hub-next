@@ -11,21 +11,19 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) response: Response) {
+    const { user, sessionId } = await this.authService.register(dto);
+
+    this.setSessionCookie(response, sessionId);
+
+    return user;
   }
 
   @Post('login')
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response) {
     const { user, sessionId } = await this.authService.login(dto.email, dto.password);
 
-    response.cookie(SESSION_COOKIE_NAME, sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: SESSION_TTL_MILLISECONDS,
-    });
+    this.setSessionCookie(response, sessionId);
 
     return user;
   }
@@ -52,5 +50,15 @@ export class AuthController {
     });
 
     return { success: true };
+  }
+
+  private setSessionCookie(response: Response, sessionId: string): void {
+    response.cookie(SESSION_COOKIE_NAME, sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: SESSION_TTL_MILLISECONDS,
+    });
   }
 }

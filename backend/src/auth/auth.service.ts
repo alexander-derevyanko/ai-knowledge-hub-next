@@ -28,13 +28,20 @@ export class AuthService {
 
     const organizationSlug = this.createOrganizationSlug(input.organizationName);
 
-    return this.usersService.createWithOrganization({
+    const user = await this.usersService.createWithOrganization({
       email: input.email,
       name: input.name,
       passwordHash,
       organizationName: input.organizationName,
       organizationSlug,
     });
+
+    const sessionId = await this.sessionService.create(user.id);
+
+    return {
+      user,
+      sessionId,
+    };
   }
 
   async login(email: string, password: string) {

@@ -8,6 +8,21 @@ import { AuthService } from './auth.service.js';
 import { SessionService } from './session.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 
+const REGISTER_DTO: RegisterDto = {
+  name: 'John Doe',
+  email: 'john@example.com',
+  password: 'password123',
+  organizationName: 'Acme Inc',
+};
+
+const CREATED_USER = {
+  id: 'user-id',
+  email: REGISTER_DTO.email,
+  name: REGISTER_DTO.name,
+};
+
+const SESSION_ID = 'session-id';
+
 describe('AuthService', () => {
   let authService: AuthService;
 
@@ -54,50 +69,59 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    const registerDto: RegisterDto = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      password: 'password123',
-      organizationName: 'Acme Inc',
-    };
-
-    it('should register a new user with an organization', async () => {
-      const existingUser = null;
+    it('should register a new user, create a session and return both', async () => {
       const passwordHash = 'hashed-password';
-      const createdUser = {
-        id: 'user-id',
-        email: registerDto.email,
-        name: registerDto.name,
-      };
 
-      usersService.findByEmailForAuthentication.mockResolvedValue(existingUser);
+      usersService.findByEmailForAuthentication.mockResolvedValue(null);
       passwordService.hash.mockResolvedValue(passwordHash);
-      usersService.createWithOrganization.mockResolvedValue(createdUser);
+      usersService.createWithOrganization.mockResolvedValue(CREATED_USER);
+      sessionService.create.mockResolvedValue(SESSION_ID);
 
-      const result = await authService.register(registerDto);
+      const result = await authService.register(REGISTER_DTO);
 
-      expect(usersService.findByEmailForAuthentication).toHaveBeenCalledWith(registerDto.email);
-      expect(passwordService.hash).toHaveBeenCalledWith(registerDto.password);
+      expect(usersService.findByEmailForAuthentication).toHaveBeenCalledWith(REGISTER_DTO.email);
+
+      expect(passwordService.hash).toHaveBeenCalledWith(REGISTER_DTO.password);
+
       expect(usersService.createWithOrganization).toHaveBeenCalledWith({
-        email: registerDto.email,
-        name: registerDto.name,
+        email: REGISTER_DTO.email,
+        name: REGISTER_DTO.name,
         passwordHash,
-        organizationName: registerDto.organizationName,
+        organizationName: REGISTER_DTO.organizationName,
         organizationSlug: 'acme-inc',
       });
-      expect(result).toEqual(createdUser);
-    });
 
-    it('should throw ConflictException if email already exists', async () => {
-      usersService.findByEmailForAuthentication.mockResolvedValue({
-        id: 'existing-user-id',
-        email: registerDto.email,
+      expect(sessionService.create).toHaveBeenCalledWith(CREATED_USER.id);
+
+      expect(result).toEqual({
+        user: CREATED_USER,
+        sessionId: SESSION_ID,
       });
 
-      await expect(authService.register(registerDto)).rejects.toThrow(ConflictException);
+      expect(result.user).not.toHaveProperty('passwordHash');
+    });
+
+    it('should not create a user or session if email already exists', async () => {
+      usersService.findByEmailForAuthentication.mockResolvedValue({
+        id: 'existing-user-id',
+        email: REGISTER_DTO.email,
+      });
+
+      await expect(authService.register(REGISTER_DTO)).rejects.toThrow(ConflictException);
 
       expect(passwordService.hash).not.toHaveBeenCalled();
       expect(usersService.createWithOrganization).not.toHaveBeenCalled();
+      expect(sessionService.create).not.toHaveBeenCalled();
+    });
+
+    it('should not create a session if user creation fails', async () => {
+      usersService.findByEmailForAuthentication.mockResolvedValue(null);
+      passwordService.hash.mockResolvedValue('hashed-password');
+      usersService.createWithOrganization.mockRejectedValue(new Error('Database error'));
+
+      await expect(authService.register(REGISTER_DTO)).rejects.toThrow('Database error');
+
+      expect(sessionService.create).not.toHaveBeenCalled();
     });
   });
 
@@ -120,11 +144,13 @@ describe('AuthService', () => {
 
       expect(usersService.findByEmailForAuthentication).toHaveBeenCalledWith(email);
       expect(passwordService.verify).toHaveBeenCalledWith(user.passwordHash, password);
+
       expect(result).toEqual({
         id: user.id,
         email: user.email,
         name: user.name,
       });
+
       expect(result).not.toHaveProperty('passwordHash');
     });
 
@@ -145,6 +171,7 @@ describe('AuthService', () => {
         name: 'John Doe',
         passwordHash: 'hashed-password',
       });
+
       passwordService.verify.mockResolvedValue(false);
 
       await expect(authService.validateCredentials(email, password)).rejects.toThrow(
@@ -163,19 +190,18 @@ describe('AuthService', () => {
         email,
         name: 'John Doe',
       };
-      const sessionId = 'session-id';
 
       const validateCredentialsMock = vi
         .spyOn(authService, 'validateCredentials')
         .mockResolvedValue(user);
 
-      sessionService.create.mockResolvedValue(sessionId);
+      sessionService.create.mockResolvedValue(SESSION_ID);
 
       const result = await authService.login(email, password);
 
       expect(validateCredentialsMock).toHaveBeenCalledWith(email, password);
       expect(sessionService.create).toHaveBeenCalledWith(user.id);
-      expect(result).toEqual({ user, sessionId });
+      expect(result).toEqual({ user, sessionId: SESSION_ID });
     });
 
     it('should not create a session if credentials are invalid', async () => {
@@ -250,11 +276,9 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should destroy session if session ID is provided', async () => {
-      const sessionId = 'session-id';
+      await authService.logout(SESSION_ID);
 
-      await authService.logout(sessionId);
-
-      expect(sessionService.destroy).toHaveBeenCalledWith(sessionId);
+      expect(sessionService.destroy).toHaveBeenCalledWith(SESSION_ID);
     });
 
     it('should not destroy session if session ID is missing', async () => {
@@ -264,13 +288,11 @@ describe('AuthService', () => {
     });
 
     it('should propagate errors from SessionService', async () => {
-      const sessionId = 'session-id';
-
       sessionService.destroy.mockRejectedValue(new Error('Redis error'));
 
-      await expect(authService.logout(sessionId)).rejects.toThrow('Redis error');
+      await expect(authService.logout(SESSION_ID)).rejects.toThrow('Redis error');
 
-      expect(sessionService.destroy).toHaveBeenCalledWith(sessionId);
+      expect(sessionService.destroy).toHaveBeenCalledWith(SESSION_ID);
     });
   });
 });

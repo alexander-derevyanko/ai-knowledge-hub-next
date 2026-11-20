@@ -98,7 +98,11 @@ describe('Auth HTTP integration (e2e)', () => {
   });
 
   describe('POST /api/auth/register', () => {
-    it('should register a user with a new organization', async () => {
+    it('should register a user, create a session and authenticate with the session cookie', async () => {
+      prismaMock.user.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(AUTHENTICATED_USER);
+
       const response = await request(app.getHttpServer())
         .post('/api/auth/register')
         .send({
@@ -127,6 +131,7 @@ describe('Auth HTTP integration (e2e)', () => {
 
       expect(response.body).not.toHaveProperty('password');
       expect(response.body).not.toHaveProperty('passwordHash');
+      expect(response.body).not.toHaveProperty('sessionId');
 
       expect(prismaMock.user.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -162,7 +167,39 @@ describe('Auth HTTP integration (e2e)', () => {
       expect(createCall.data.passwordHash).not.toBe(USER_PASSWORD);
       expect(createCall.data.passwordHash).toBeTruthy();
 
-      expect(response.headers['set-cookie']).toBeUndefined();
+      const setCookieHeader = response.headers['set-cookie'];
+
+      expect(setCookieHeader).toBeDefined();
+
+      const cookie = Array.isArray(setCookieHeader) ? setCookieHeader[0] : setCookieHeader;
+
+      expect(cookie).toContain(`${SESSION_COOKIE_NAME}=`);
+      expect(cookie).toContain('HttpOnly');
+      expect(cookie).toContain('SameSite=Lax');
+      expect(cookie).toContain('Path=/');
+      expect(cookie).toContain(`Max-Age=${SESSION_TTL_SECONDS}`);
+
+      const sessionCookie = cookie.split(';')[0];
+      const sessionId = sessionCookie.split('=').slice(1).join('=');
+
+      expect(sessionId).toMatch(/^[a-f0-9]{64}$/);
+
+      expect(redisMock.set).toHaveBeenCalledWith(
+        `session:${sessionId}`,
+        expect.any(String),
+        SESSION_TTL_SECONDS,
+      );
+
+      expect(sessions.has(`session:${sessionId}`)).toBe(true);
+
+      const currentUserResponse = await request(app.getHttpServer())
+        .get('/api/auth/me')
+        .set('Cookie', sessionCookie)
+        .expect(200);
+
+      expect(currentUserResponse.body).toEqual(AUTHENTICATED_USER);
+
+      expect(redisMock.get).toHaveBeenCalledWith(`session:${sessionId}`);
     });
 
     it('should reject registration when the email already exists', async () => {
@@ -190,6 +227,8 @@ describe('Auth HTTP integration (e2e)', () => {
       });
 
       expect(prismaMock.user.create).not.toHaveBeenCalled();
+      expect(redisMock.set).not.toHaveBeenCalled();
+      expect(response.headers['set-cookie']).toBeUndefined();
     });
 
     it('should reject registration with invalid DTO data', async () => {
@@ -218,6 +257,8 @@ describe('Auth HTTP integration (e2e)', () => {
       );
 
       expect(prismaMock.user.create).not.toHaveBeenCalled();
+      expect(redisMock.set).not.toHaveBeenCalled();
+      expect(response.headers['set-cookie']).toBeUndefined();
     });
   });
 
