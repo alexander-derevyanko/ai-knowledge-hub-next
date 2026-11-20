@@ -1,9 +1,10 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 
 import { getCurrentUser } from '@/features/auth/lib/auth';
 import AppLayout from '@/shared/components/layout/AppLayout/AppLayout';
 
-export default async function MainLayout({ children }: { children: React.ReactNode }) {
+async function ProtectedLayoutContent({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -11,4 +12,12 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   }
 
   return <AppLayout>{children}</AppLayout>;
+}
+
+export default function MainLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div role="status">Loading...</div>}>
+      <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
+    </Suspense>
+  );
 }

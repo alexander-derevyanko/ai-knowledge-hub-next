@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { SESSION_COOKIE_NAME } from '@/shared/constants/auth';
+
 export const config = {
   matcher: ['/dashboard/:path*', '/documents/:path*', '/chat/:path*', '/settings/:path*'],
 };
 
 export default function proxyRequest(request: NextRequest): NextResponse {
-  const hasSessionCookie = Boolean(request.cookies.get('session')?.value);
+  const hasSessionCookie = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);
 
   if (!hasSessionCookie) {
     return NextResponse.redirect(new URL('/login', request.url));

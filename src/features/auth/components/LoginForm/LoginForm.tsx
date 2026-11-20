@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import './LoginForm.css';
 import type { LoginCredentials } from '../../types/auth';
 import { login } from '../../api/authApi';
+import Link from 'next/link';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -185,9 +186,9 @@ export default function LoginForm() {
 
         <div className="login-footer">
           <span>Don&apos;t have an account?</span>
-          <button type="button" className="register-link">
+          <Link href="/register" className="register-link">
             Sign up
-          </button>
+          </Link>
         </div>
       </div>
     </main>

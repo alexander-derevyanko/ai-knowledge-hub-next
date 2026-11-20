@@ -1,6 +1,6 @@
 import { getApiErrorMessage } from '@/shared/api/apiError';
 
-import type { LoginCredentials, RegisterCredentials, RegisterResponse, User } from '../types/auth';
+import type { LoginCredentials, RegisterCredentials, RegisterResponse } from '../types/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -36,7 +36,7 @@ async function postJson<TBody, TResponse>(
 }
 
 export async function register(credentials: RegisterCredentials): Promise<RegisterResponse> {
-  return postJson<RegisterCredentials, RegisterResponse>('/auth/register', credentials);
+  return postJson<RegisterCredentials, RegisterResponse>('/auth/register', credentials, 'include');
 }
 
 export async function login(credentials: LoginCredentials): Promise<void> {
@@ -44,11 +44,6 @@ export async function login(credentials: LoginCredentials): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-  // TODO: Implement API integration.
-  throw new Error('Not implemented');
-}
-
-export async function getCurrentUser(): Promise<User | null> {
   // TODO: Implement API integration.
   throw new Error('Not implemented');
 }

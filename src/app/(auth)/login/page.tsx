@@ -1,9 +1,10 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 
 import LoginForm from '@/features/auth/components/LoginForm/LoginForm';
 import { getCurrentUser } from '@/features/auth/lib/auth';
 
-export default async function Page() {
+async function LoginPageContent() {
   const user = await getCurrentUser();
 
   if (user) {
@@ -11,4 +12,12 @@ export default async function Page() {
   }
 
   return <LoginForm />;
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div role="status">Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
+  );
 }
