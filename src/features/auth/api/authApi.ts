@@ -44,6 +44,22 @@ export async function login(credentials: LoginCredentials): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-  // TODO: Implement API integration.
-  throw new Error('Not implemented');
+  if (!API_BASE_URL) {
+    throw new Error('NEXT_PUBLIC_API_URL is not configured');
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch {
+    throw new Error('Unable to connect to the authentication server');
+  }
+
+  if (!response.ok) {
+    throw new Error(await getApiErrorMessage(response));
+  }
 }
