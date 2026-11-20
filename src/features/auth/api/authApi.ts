@@ -1,40 +1,8 @@
+import { getApiErrorMessage } from '@/shared/api/apiError';
+
 import type { LoginCredentials, RegisterCredentials, RegisterResponse, User } from '../types/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
-interface ApiErrorDetail {
-  field: string;
-  messages: string[];
-}
-
-interface ApiErrorResponse {
-  message?: string | string[];
-  details?: ApiErrorDetail[];
-}
-
-async function getErrorMessage(response: Response): Promise<string> {
-  const body = (await response.json().catch(() => null)) as ApiErrorResponse | null;
-
-  if (!body) {
-    return `Request failed with status ${response.status}`;
-  }
-
-  const message = Array.isArray(body.message) ? body.message.join(', ') : body.message;
-
-  const details = body.details
-    ?.flatMap(({ field, messages }) => messages.map((item) => `${field}: ${item}`))
-    .join('; ');
-
-  if (message && details) {
-    return `${message}: ${details}`;
-  }
-
-  if (message) {
-    return message;
-  }
-
-  return `Request failed with status ${response.status}`;
-}
 
 async function postJson<TBody, TResponse>(
   endpoint: string,
@@ -61,7 +29,7 @@ async function postJson<TBody, TResponse>(
   }
 
   if (!response.ok) {
-    throw new Error(await getErrorMessage(response));
+    throw new Error(await getApiErrorMessage(response));
   }
 
   return (await response.json()) as TResponse;
