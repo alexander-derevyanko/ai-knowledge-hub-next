@@ -5,6 +5,12 @@ import cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 
 export function configureApp(app: INestApplication): void {
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'x-organization-id'],
+  });
+
   app.use(cookieParser());
 
   app.useGlobalPipes(
