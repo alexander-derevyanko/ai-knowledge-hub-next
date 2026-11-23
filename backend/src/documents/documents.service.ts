@@ -20,6 +20,7 @@ export type SortOrder = 'asc' | 'desc';
 export type FindAllDocumentsInput = {
   page?: number;
   limit?: number;
+  search?: string;
   category?: DocumentCategory;
   status?: DocumentStatus;
   sortBy?: DocumentSortField;
@@ -57,10 +58,28 @@ export class DocumentsService {
 
     const skip = (page - 1) * limit;
 
+    const search = input.search?.trim();
+
     const where: Prisma.DocumentWhereInput = {
       organizationId,
       ...(input.category && { category: input.category }),
       ...(input.status && { status: input.status }),
+      ...(search && {
+        OR: [
+          {
+            title: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            fileName: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      }),
     };
 
     const sortBy = input.sortBy ?? 'createdAt';

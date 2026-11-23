@@ -153,7 +153,7 @@ describe('Auth HTTP integration (e2e)', () => {
                 organization: {
                   create: {
                     name: ORGANIZATION_NAME,
-                    slug: 'ai-knowledge-hub',
+                    slug: expect.stringMatching(/^ai-knowledge-hub-[a-f0-9]{8}$/),
                   },
                 },
               },

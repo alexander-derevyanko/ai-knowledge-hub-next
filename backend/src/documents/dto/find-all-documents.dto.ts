@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 import { DocumentCategory, DocumentStatus } from '../../generated/prisma/client.js';
 
@@ -16,6 +16,12 @@ export class FindAllDocumentsDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
+
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MaxLength(200)
+  search?: string;
 
   @IsOptional()
   @IsEnum(DocumentCategory)

@@ -323,6 +323,122 @@ describe('Documents HTTP integration (e2e)', () => {
 
       expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
     });
+
+    it('should search documents by title and file name case-insensitively', async () => {
+      await request(app.getHttpServer())
+        .get('/api/documents')
+        .query({ search: 'NESTJS' })
+        .set('Cookie', sessionCookie)
+        .expect(200);
+
+      const expectedWhere = {
+        organizationId: ORGANIZATION_ID,
+        OR: [
+          {
+            title: {
+              contains: 'NESTJS',
+              mode: 'insensitive',
+            },
+          },
+          {
+            fileName: {
+              contains: 'NESTJS',
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+
+      expect(prismaMock.document.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expectedWhere,
+        }),
+      );
+
+      expect(prismaMock.document.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+    });
+
+    it('should combine search with category and status filters', async () => {
+      await request(app.getHttpServer())
+        .get('/api/documents')
+        .query({
+          search: 'nestjs',
+          category: 'DEVELOPMENT',
+          status: 'READY',
+        })
+        .set('Cookie', sessionCookie)
+        .expect(200);
+
+      const expectedWhere = {
+        organizationId: ORGANIZATION_ID,
+        category: 'DEVELOPMENT',
+        status: 'READY',
+        OR: [
+          {
+            title: {
+              contains: 'nestjs',
+              mode: 'insensitive',
+            },
+          },
+          {
+            fileName: {
+              contains: 'nestjs',
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+
+      expect(prismaMock.document.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expectedWhere,
+        }),
+      );
+
+      expect(prismaMock.document.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+    });
+
+    it('should ignore an empty search query after trimming whitespace', async () => {
+      await request(app.getHttpServer())
+        .get('/api/documents')
+        .query({ search: '   ' })
+        .set('Cookie', sessionCookie)
+        .expect(200);
+
+      const expectedWhere = {
+        organizationId: ORGANIZATION_ID,
+      };
+
+      expect(prismaMock.document.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expectedWhere,
+        }),
+      );
+
+      expect(prismaMock.document.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+    });
+
+    it('should reject a search query longer than 200 characters', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/documents')
+        .query({ search: 'a'.repeat(201) })
+        .set('Cookie', sessionCookie)
+        .expect(400);
+
+      expect(response.body).toMatchObject({
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      });
+
+      expect(prismaMock.document.findMany).not.toHaveBeenCalled();
+      expect(prismaMock.document.count).not.toHaveBeenCalled();
+    });
   });
 
   describe('GET /api/documents/:id', () => {
