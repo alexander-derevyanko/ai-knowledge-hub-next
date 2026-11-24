@@ -3,13 +3,14 @@
 import { useForm, useWatch } from 'react-hook-form';
 import { useRef } from 'react';
 
-import { DocumentUploadFormValues, DocCategory } from '@/shared/types/document';
+import type { DocumentUploadFormValues } from '@/features/documents/types/document';
+import { DocumentCategory } from '@/shared/types/document';
 
 import './DocumentUploadModal.css';
 
 type DocumentUploadModalProps = {
   onClose: () => void;
-  onSubmitDoc: (data: DocumentUploadFormValues) => void;
+  onSubmitDoc: (data: DocumentUploadFormValues) => Promise<void>;
 };
 
 export default function DocumentUploadModal({ onClose, onSubmitDoc }: DocumentUploadModalProps) {
@@ -37,9 +38,15 @@ export default function DocumentUploadModal({ onClose, onSubmitDoc }: DocumentUp
     validate: {
       supportedFormat: (files) => {
         const file = files?.[0];
-        const allowedExtensions = ['pdf', 'docx', 'txt', 'md'];
 
-        if (!allowedExtensions.includes(file.name.split('.').pop()?.toLowerCase() || '')) {
+        if (!file) {
+          return 'File is required';
+        }
+
+        const allowedExtensions = ['pdf', 'docx', 'txt', 'md'];
+        const extension = file.name.split('.').pop()?.toLowerCase();
+
+        if (!extension || !allowedExtensions.includes(extension)) {
           return `Invalid file format. Please upload a ${allowedExtensions.join(', ')} file.`;
         }
 
@@ -113,12 +120,12 @@ export default function DocumentUploadModal({ onClose, onSubmitDoc }: DocumentUp
               aria-invalid={!!errors.category}
             >
               <option value="">Select category</option>
-              <option value={DocCategory.Architecture}>Architecture</option>
-              <option value={DocCategory.Development}>Development</option>
-              <option value={DocCategory.AI}>AI</option>
-              <option value={DocCategory.Product}>Product</option>
-              <option value={DocCategory.Business}>Business</option>
-              <option value={DocCategory.Security}>Security</option>
+              <option value={DocumentCategory.Architecture}>Architecture</option>
+              <option value={DocumentCategory.Development}>Development</option>
+              <option value={DocumentCategory.AI}>AI</option>
+              <option value={DocumentCategory.Product}>Product</option>
+              <option value={DocumentCategory.Business}>Business</option>
+              <option value={DocumentCategory.Security}>Security</option>
             </select>
             {errors.category?.message && (
               <span className="document-upload-modal__error">{errors.category.message}</span>

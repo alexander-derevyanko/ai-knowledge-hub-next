@@ -1,9 +1,15 @@
-import { fetchDocuments } from '@/shared/api/documentsApi';
+import { fetchDocumentsServer } from './api/documentsServerApi';
 import DocumentsClient from './components/DocumentsClient/DocumentsClient';
+
 import './DocumentsPage.css';
 
 export default async function DocumentsPage() {
-  const documents = await fetchDocuments();
+  const initialData = await fetchDocumentsServer({
+    page: 1,
+    limit: 10,
+    sortBy: 'updatedAt',
+    sortOrder: 'desc',
+  });
 
   return (
     <div className="documents">
@@ -12,7 +18,7 @@ export default async function DocumentsPage() {
         <p>Manage and browse your knowledge base</p>
       </header>
 
-      <DocumentsClient initialDocuments={documents} />
+      <DocumentsClient initialData={initialData} />
     </div>
   );
 }

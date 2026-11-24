@@ -28,7 +28,7 @@ export function mapSortOptionToQuery(option: DocSortOption): SortConfig {
   return SORT_CONFIG[option];
 }
 
-export function buildDocumentsSearchParams(query: DocumentsQuery): URLSearchParams {
+export function mapDocumentsQueryToSearchParams(query: DocumentsQuery): URLSearchParams {
   const params = new URLSearchParams();
 
   if (query.page !== undefined) {

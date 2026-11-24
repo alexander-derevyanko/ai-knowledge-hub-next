@@ -7,17 +7,21 @@ import { formatFileSize } from '@/shared/utils/formatFileSize';
 
 export default async function DashboardPage() {
   const documents = await fetchDocuments();
+
   const stats = DASHBOARD_STATS.map((stat) => {
     switch (stat.id) {
       case DashboardStats.Documents:
         return { ...stat, value: documents.length };
+
       case DashboardStats.Questions:
         return { ...stat, value: '-' };
+
       case DashboardStats.Storage: {
-        const totalStorage = documents.reduce((total, { size }) => total + size, 0);
+        const totalStorage = documents.reduce((total, document) => total + document.sizeBytes, 0);
 
         return { ...stat, value: formatFileSize(totalStorage) };
       }
+
       default:
         return { ...stat, value: '—' };
     }
@@ -43,7 +47,7 @@ export default async function DashboardPage() {
 
         <div className="documents-list">
           {documents.map((document) => (
-            <DocumentCard key={document.id} document={document} />
+            <DocumentCard key={document.id} document={document} href={null} />
           ))}
         </div>
       </section>

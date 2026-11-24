@@ -6,7 +6,7 @@ The project aims to evolve into an AI-powered knowledge workspace where users ca
 
 It is built as a long-term portfolio project with a focus on maintainable architecture, type safety, modular design, and production-oriented development practices.
 
-**Status:** Active development. The Next.js frontend foundation and NestJS backend API are implemented. The backend includes session-based authentication, organization-scoped document operations, PostgreSQL persistence, and Redis-backed session management. Frontend authentication is integrated with the backend, including registration with automatic login, login, logout, and protected application routes. Document upload, processing, and AI-powered capabilities remain on the roadmap.
+**Status:** Active development. The Next.js frontend foundation and NestJS backend API are implemented. The backend includes session-based authentication, organization-scoped document operations, PostgreSQL persistence, and Redis-backed session management. Frontend authentication is integrated with the backend, including registration with automatic login, login, logout, and protected application routes. Documents are integrated with the backend through the Next.js BFF. Physical file upload, document processing, and AI-powered capabilities remain on the roadmap.
 
 ---
 
@@ -33,6 +33,8 @@ The long-term goal is to connect these areas into a unified experience powered b
 - TypeScript
 - App Router
 - CSS Modules
+- ESLint
+- Prettier
 
 ### Backend
 
@@ -45,13 +47,15 @@ The long-term goal is to connect these areas into a unified experience powered b
 - `class-validator`
 - `class-transformer`
 - Argon2id for password hashing
+- Vitest
+- Oxlint
 
 ### Infrastructure and Development Tools
 
 - Docker
 - Docker Compose
-- Vitest
-- Oxlint
+- npm
+- Git
 - TypeScript tooling
 
 Additional technologies will be introduced when required by specific project capabilities.
@@ -62,8 +66,8 @@ Additional technologies will be introduced when required by specific project cap
 
 AI Knowledge Hub consists of two independently runnable applications:
 
-- **Frontend** — Next.js application responsible for the user interface and frontend application logic.
-- **Backend** — NestJS REST API responsible for authentication, domain operations, business logic, and persistent data.
+- **Frontend** — Next.js application responsible for the user interface, routing, server-side rendering, and the Backend-for-Frontend (BFF) layer.
+- **Backend** — NestJS REST API responsible for authentication, domain operations, business logic, authorization, and persistent data.
 
 PostgreSQL is the primary relational database for persistent application data. Redis is used as an ephemeral store for server-side sessions.
 
@@ -79,16 +83,31 @@ The architecture follows a modular approach, separating application features, sh
               Frontend                      Backend
               Next.js                       NestJS
                  |                             |
-       +---------+---------+       +-----------+------------+
-       |         |         |       |           |            |
-   Dashboard Documents  Chat     Auth        Users    Organizations
-       |                             |           |            |
-   Settings                      Security    Documents   Memberships
-       |                             |
-   Profile                    Redis Sessions
-   (planned)                        |
-                               PostgreSQL
+          +------+-------+             +-------+-------+
+          |              |             |               |
+       Browser       Server          Auth           Domain
+          |              |             |               |
+       Next.js BFF       |             |          Documents
+          |              |             |               |
+          +--------------+-------------+---------------+
+                         |
+                    PostgreSQL
+                         |
+                   Redis Sessions
 ```
+
+### Frontend and Backend Communication
+
+The frontend uses two communication patterns:
+
+- **Browser-to-backend through BFF:** Browser requests for the Documents feature go through explicit Next.js Route Handlers. The BFF forwards requests to NestJS and returns the backend response to the browser.
+- **Server-to-backend:** Next.js Server Components and server-side application logic communicate with NestJS directly through a server-only HTTP client. Session cookies are forwarded where authentication is required.
+
+The Documents feature has been migrated to the BFF approach.
+
+Authentication currently still uses direct browser-to-backend requests for registration, login, and logout. Migrating these requests to the Next.js BFF is the next integration step.
+
+NestJS remains responsible for authentication, session validation, authorization, business logic, request validation, and tenant isolation. The BFF does not replace backend security or domain logic.
 
 ### Data and Infrastructure
 
@@ -179,6 +198,15 @@ cp .env.docker.example .env.docker
 
 Configure the PostgreSQL and Redis connection settings and credentials in `.env.docker`.
 
+The example configuration includes:
+
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `POSTGRES_PORT`
+- `DATABASE_URL`
+- `REDIS_URL`
+
 The environment file contains local development configuration and must not be committed.
 
 ### 4. Configure Frontend Environment
@@ -195,7 +223,9 @@ Add the backend API URL:
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-The frontend uses this URL to communicate with the NestJS API.
+The frontend currently uses this URL for direct browser-to-backend authentication requests. Documents requests use the Next.js BFF and do not require the browser to use this URL.
+
+The variable will be removed after authentication is migrated to the BFF.
 
 The `.env.local` file contains local development configuration and must not be committed.
 
@@ -262,6 +292,25 @@ For database migrations, Prisma configuration, seed information, and backend dev
 
 ---
 
+## Development Commands
+
+Run frontend commands from the repository root.
+
+| Command                | Purpose                                           |
+| ---------------------- | ------------------------------------------------- |
+| `npm run dev`          | Start the Next.js development server              |
+| `npm run build`        | Build the production application                  |
+| `npm run start`        | Start the production application                  |
+| `npm run lint`         | Run ESLint                                        |
+| `npm run lint:fix`     | Run ESLint and automatically fix supported issues |
+| `npm run typecheck`    | Run TypeScript type checking                      |
+| `npm run format`       | Format project files with Prettier                |
+| `npm run format:check` | Check formatting without modifying files          |
+
+Backend commands are documented in [`backend/README.md`](backend/README.md).
+
+---
+
 ## Current Project Status
 
 The project is being developed incrementally, with each milestone introducing a coherent and verifiable set of capabilities.
@@ -277,13 +326,15 @@ The project is being developed incrementally, with each milestone introducing a 
 - Dashboard, Documents, Chat, and Settings UI foundations.
 - Document list and details views.
 - Loading, error, and not-found states.
+- Document listing, search, filtering, sorting, and pagination integrated with the backend.
+- Document metadata creation through the Next.js BFF.
+- Server-side document data retrieval.
 - User registration and login flows integrated with the NestJS backend.
 - Automatic login after successful registration.
 - Logout with server-side session invalidation.
 - HttpOnly session cookie handling.
 - Server-side current-user retrieval through the backend API.
 - Protected application routes with Next.js Proxy and server-side authentication checks.
-- Frontend authentication API integration with credentialed requests.
 
 #### Backend
 
@@ -309,9 +360,13 @@ The project is being developed incrementally, with each milestone introducing a 
 - Standardized API error handling.
 - Unit tests and HTTP integration tests for authentication and document operations.
 
+### In Progress
+
+- Migration of browser-based authentication requests to the Next.js BFF.
+- Consolidation of browser-to-backend communication through same-origin Next.js endpoints.
+
 ### Planned
 
-- Frontend-to-backend integration for Documents, Chat, Settings, and remaining application features (authentication integration is implemented).
 - User profile and account management.
 - Organization and workspace management improvements.
 - Physical document upload and file storage.
@@ -333,4 +388,8 @@ The project follows these principles:
 - **Clear separation of concerns** — keep frontend, backend, domain logic, and infrastructure responsibilities distinct.
 - **Type safety** — use TypeScript and explicit contracts.
 - **Modular architecture** — organize functionality around application domains.
-- **Secure defaults** — validate external input, hash
+- **Secure defaults** — validate external input, hash passwords, use HttpOnly cookies, and enforce authorization on the backend.
+- **Server-side ownership of sensitive operations** — keep session validation, business rules, and tenant isolation in NestJS.
+- **Maintainability** — prefer clear and conventional solutions over unnecessary abstractions.
+
+The project is developed in logical milestones. Each milestone includes implementation, verification, documentation updates, and a dedicated Git commit.

@@ -6,7 +6,7 @@ It provides the server-side foundation for application features, handling authen
 
 The backend is designed around modular architecture, clear separation of responsibilities, and incremental development.
 
-**Status:** The backend foundation is implemented, including database integration, user and organization management, session-based authentication, Redis-backed sessions, organization-scoped document operations, request validation, and standardized error handling. The Next.js frontend is integrated with the backend authentication API.
+**Status:** The backend foundation is implemented, including database integration, user and organization management, session-based authentication, Redis-backed sessions, organization-scoped document operations, request validation, and standardized error handling. The Documents feature is integrated with the Next.js frontend through its BFF layer. Authentication currently uses direct browser-to-backend requests and is planned to migrate to the BFF.
 
 ---
 
@@ -43,6 +43,8 @@ Its main responsibilities include:
 - Enforcing organization-scoped data operations.
 - Managing session data through Redis.
 - Providing shared infrastructure for error handling and database access.
+
+The Next.js application provides the frontend and BFF layer. The backend remains the source of truth for authentication, authorization, validation, business logic, and data integrity.
 
 ### Project Structure
 
@@ -173,7 +175,13 @@ The `CurrentUser` decorator provides the authenticated user context to controlle
 
 ### Frontend Integration
 
-The Next.js frontend communicates with the backend using the configured API URL:
+The Next.js frontend currently uses two communication patterns:
+
+- **Documents BFF:** Browser requests go through explicit Next.js Route Handlers. The BFF forwards requests to NestJS, while NestJS retains validation, authentication, authorization, and business logic.
+- **Authentication:** Registration, login, and logout currently use direct browser-to-backend requests. Requests include browser credentials so the backend can set and clear the HttpOnly session cookie.
+- **Server-to-backend requests:** Next.js Server Components retrieve the current user by forwarding the incoming session cookie to the backend. User-specific requests are not cached.
+
+The current direct browser authentication integration uses:
 
 ```text
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
@@ -183,14 +191,11 @@ The backend enables credentialed CORS requests from the configured frontend orig
 
 The CORS configuration allows credentials and explicitly defines the permitted request headers. Wildcard origins are not used with credentialed requests.
 
-The frontend uses two communication patterns:
-
-- **Browser-to-backend requests:** Registration, login, and logout are initiated from Client Components. Requests include browser credentials so the backend can set and clear the HttpOnly session cookie.
-- **Server-to-backend requests:** Server Components retrieve the current user by forwarding the incoming session cookie to the backend. User-specific requests are not cached.
-
 The frontend uses Next.js Proxy for an initial session-cookie presence check on protected routes. The protected application layout performs the authoritative authentication check by requesting the current user from the backend.
 
 The backend remains responsible for validating sessions and enforcing authorization through `AuthGuard`.
+
+**Planned improvement:** Authentication requests will be migrated to explicit Next.js BFF Route Handlers. After this migration, browser-based authentication requests will no longer require `NEXT_PUBLIC_API_URL`, and the frontend/backend integration will use the same-origin BFF approach consistently.
 
 ---
 
@@ -243,6 +248,21 @@ cp .env.docker.example .env.docker
 ```
 
 Configure the database credentials and connection settings, as well as the Redis connection URL, in `.env.docker`.
+
+The example configuration contains:
+
+```env
+POSTGRES_USER=akh_user
+POSTGRES_PASSWORD=replace_with_a_local_password
+POSTGRES_DB=ai_knowledge_hub
+POSTGRES_PORT=5432
+
+DATABASE_URL=postgresql://akh_user:replace_with_a_local_password@localhost:5432/ai_knowledge_hub?schema=public
+
+REDIS_URL=redis://localhost:6379
+```
+
+Use your own local password instead of the placeholder value.
 
 The backend and Prisma configuration load this environment configuration during local development.
 
@@ -485,15 +505,7 @@ Current functional areas include:
 - Organization and membership operations.
 - Document metadata management.
 
-The Documents API supports:
-
-- Creating document metadata.
-- Listing documents.
-- Retrieving a document by ID.
-- Updating document metadata.
-- Deleting document metadata.
-- Pagination, filtering, and sorting.
-- Organization-scoped access.
+The Documents API supports metadata management, organization-scoped access, and querying through pagination, filtering, and sorting.
 
 The API currently manages document metadata only. Physical file upload, file storage, text extraction, and AI processing are not implemented.
 
@@ -539,6 +551,12 @@ Run tests with coverage:
 npm run test:cov
 ```
 
+Run tests with the debugger:
+
+```bash
+npm run test:debug
+```
+
 The current unit test suite contains 59 tests.
 
 ### HTTP Integration Tests
@@ -579,6 +597,12 @@ Start in development mode:
 npm run start:dev
 ```
 
+Start in debug mode:
+
+```bash
+npm run start:debug
+```
+
 Build the application:
 
 ```bash
@@ -589,6 +613,12 @@ Run the production build:
 
 ```bash
 npm run start:prod
+```
+
+Run the NestJS deployment command:
+
+```bash
+npm run deploy
 ```
 
 ### Code Quality
@@ -607,7 +637,7 @@ npm run typecheck
 
 ### Formatting
 
-Format source files:
+Format source and test files:
 
 ```bash
 npm run format
@@ -625,6 +655,12 @@ Validate the Prisma schema:
 
 ```bash
 npm run prisma:validate
+```
+
+Format the Prisma schema:
+
+```bash
+npm run prisma:format
 ```
 
 Generate Prisma Client:
@@ -663,6 +699,14 @@ Open Prisma Studio:
 npm run prisma:studio
 ```
 
+Reset the development database:
+
+```bash
+npm run prisma:migrate:reset
+```
+
+**Warning:** Database reset is destructive and removes existing development data.
+
 ---
 
 ## Current Limitations
@@ -671,7 +715,6 @@ The backend currently provides authentication, session management, organization-
 
 The following capabilities are not implemented yet:
 
-- Frontend-to-backend integration across all application features.
 - User profile and account management.
 - Advanced organization and workspace management.
 - Physical document upload and storage.
@@ -692,7 +735,7 @@ The current authentication implementation provides server-side sessions and prot
 
 The backend roadmap includes:
 
-1. Frontend-to-backend integration for remaining application features.
+1. Complete frontend integration through the Next.js BFF, including authentication.
 2. User profile and account management.
 3. Document upload and storage.
 4. Document processing and text extraction.

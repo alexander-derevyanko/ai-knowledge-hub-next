@@ -1,4 +1,4 @@
-import type { DocumentCategory, DocumentStatus } from './document';
+import type { DocumentCategory, DocumentStatus } from '@/shared/types/document';
 
 export enum DocSortOption {
   Newest = 'newest',

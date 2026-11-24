@@ -2,13 +2,14 @@ import 'server-only';
 
 import { getApiErrorMessage } from '@/shared/api/apiError';
 import { backendFetch } from '@/shared/api/backendClient';
+import { Document } from '@/shared/types/document';
 
-import { buildDocumentsSearchParams } from '../adapters/document-query.adapter';
 import type { DocumentsQuery } from '../types/document-query';
-import type { Document, DocumentsResponse } from '../types/document';
+import type { DocumentsResponse } from '../types/document';
+import { mapDocumentsQueryToSearchParams } from '../mappers/document-query.mapper';
 
 export async function fetchDocumentsServer(query: DocumentsQuery = {}): Promise<DocumentsResponse> {
-  const searchParams = buildDocumentsSearchParams(query);
+  const searchParams = mapDocumentsQueryToSearchParams(query);
   const queryString = searchParams.toString();
   const path = `/documents${queryString ? `?${queryString}` : ''}`;
 

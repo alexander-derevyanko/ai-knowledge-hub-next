@@ -1,15 +1,14 @@
 'use client';
 
-import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 
-import type { DocumentUploadFormValues, Document } from '@/shared/types/document';
-import { DocSortOption, DocStatus, DocCategory } from '@/shared/types/document';
-import { getDocType } from '@/shared/utils/getDocType';
-import { isEnumValue } from '@/shared/utils/isEnumValue';
+import type { DocumentsResponse } from '@/features/documents/types/document';
+
+import { useDocuments } from '../../hooks/useDocuments';
 import DocumentFilters from '../DocumentFilters/DocumentFilters';
 import DocumentList from '../DocumentList/DocumentList';
+import DocumentsPagination from '../DocumentsPagination/DocumentsPagination';
 
 const DocumentUploadModal = dynamic(() => import('../DocumentUploadModal/DocumentUploadModal'), {
   ssr: false,
@@ -17,94 +16,33 @@ const DocumentUploadModal = dynamic(() => import('../DocumentUploadModal/Documen
 });
 
 type DocumentsClientProps = {
-  initialDocuments: Document[];
+  initialData: DocumentsResponse;
 };
 
-export default function DocumentsClient({ initialDocuments }: DocumentsClientProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<DocCategory | ''>('');
-  const [sortOption, setSortOption] = useState(DocSortOption.Newest);
+export default function DocumentsClient({ initialData }: DocumentsClientProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
 
-  const visibleDocuments = documents
-    .filter(({ title, category }) => {
-      const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory ? category === selectedCategory : true;
+  const {
+    documents,
+    meta,
+    searchQuery,
+    selectedCategory,
+    sortOption,
+    isLoading,
+    error,
+    handleSearchQuery,
+    handleSelectedCategory,
+    handleSortOption,
+    handlePageChange,
+    handleDocumentUpload,
+  } = useDocuments({ initialData });
 
-      return matchesSearch && matchesCategory;
-    })
-    .sort((docA, docB) => {
-      switch (sortOption) {
-        case DocSortOption.Newest:
-          return new Date(docB.updatedAt).getTime() - new Date(docA.updatedAt).getTime();
+  const handleUploadSubmit = async (data: Parameters<typeof handleDocumentUpload>[0]) => {
+    const isCreated = await handleDocumentUpload(data);
 
-        case DocSortOption.Oldest:
-          return new Date(docA.updatedAt).getTime() - new Date(docB.updatedAt).getTime();
-
-        case DocSortOption.TitleAsc:
-          return docA.title.localeCompare(docB.title);
-
-        case DocSortOption.TitleDesc:
-          return docB.title.localeCompare(docA.title);
-
-        default:
-          return 0;
-      }
-    });
-
-  const handleSearchQuery = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleSelectedCategory = (e: ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-
-    if (value === '') {
-      setSelectedCategory('');
-
-      return;
+    if (isCreated) {
+      setIsUploadModalOpen(false);
     }
-
-    if (isEnumValue(DocCategory, value)) {
-      setSelectedCategory(value);
-    }
-  };
-
-  const handleSortOption = (e: ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-
-    if (isEnumValue(DocSortOption, value)) {
-      setSortOption(value);
-    }
-  };
-
-  const handleDocumentUpload = (data: DocumentUploadFormValues) => {
-    const file = data.file[0];
-
-    if (!file) {
-      return;
-    }
-
-    const type = getDocType(file.name);
-
-    if (!type) {
-      return;
-    }
-
-    const newDocument: Document = {
-      id: crypto.randomUUID(),
-      title: data.title.trim(),
-      category: data.category,
-      type,
-      size: file.size,
-      status: DocStatus.Ready,
-      updatedAt: new Date().toISOString(),
-    };
-
-    setIsUploadModalOpen(false);
-
-    setDocuments((prevDocuments) => [...prevDocuments, newDocument]);
   };
 
   return (
@@ -124,12 +62,25 @@ export default function DocumentsClient({ initialDocuments }: DocumentsClientPro
         handleSortOption={handleSortOption}
       />
 
-      <DocumentList documents={visibleDocuments} />
+      {error && (
+        <p role="alert" className="documents__error">
+          {error}
+        </p>
+      )}
+
+      <DocumentList documents={documents} totalCount={meta.total} isLoading={isLoading} />
+
+      <DocumentsPagination
+        currentPage={meta.page}
+        totalPages={meta.totalPages}
+        isLoading={isLoading}
+        onPageChange={handlePageChange}
+      />
 
       {isUploadModalOpen && (
         <DocumentUploadModal
           onClose={() => setIsUploadModalOpen(false)}
-          onSubmitDoc={handleDocumentUpload}
+          onSubmitDoc={handleUploadSubmit}
         />
       )}
     </>

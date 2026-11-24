@@ -1,13 +1,19 @@
-import { DocCategory, DocSortOption } from '@/shared/types/document';
+import type { ChangeEvent } from 'react';
+
+import { CATEGORY_LABELS } from '@/shared/constants/document';
+import { DocumentCategory } from '@/shared/types/document';
+
+import { DocSortOption } from '../../types/document-query';
+
 import './DocumentFilters.css';
 
 interface DocumentFiltersProps {
   searchQuery: string;
-  selectedCategory: DocCategory | '';
+  selectedCategory: DocumentCategory | '';
   sortOption: DocSortOption;
-  handleSearchQuery: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSelectedCategory: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-  handleSortOption: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  handleSearchQuery: (event: ChangeEvent<HTMLInputElement>) => void;
+  handleSelectedCategory: (event: ChangeEvent<HTMLSelectElement>) => void;
+  handleSortOption: (event: ChangeEvent<HTMLSelectElement>) => void;
 }
 
 export default function DocumentFilters(props: DocumentFiltersProps) {
@@ -42,13 +48,13 @@ export default function DocumentFilters(props: DocumentFiltersProps) {
           value={props.selectedCategory}
           onChange={props.handleSelectedCategory}
         >
-          <option value="">All</option>
-          <option value={DocCategory.Architecture}>Architecture</option>
-          <option value={DocCategory.Development}>Development</option>
-          <option value={DocCategory.AI}>AI</option>
-          <option value={DocCategory.Product}>Product</option>
-          <option value={DocCategory.Business}>Business</option>
-          <option value={DocCategory.Security}>Security</option>
+          <option value="">Select category</option>
+
+          {Object.values(DocumentCategory).map((category) => (
+            <option key={category} value={category}>
+              {CATEGORY_LABELS[category]}
+            </option>
+          ))}
         </select>
       </div>
 

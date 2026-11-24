@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import DocumentDetailsPage from '@/features/documents/components/DocumentDetails/DocumentDetails';
-import { getDocumentById } from '@/shared/api/documentsApi';
+import { getDocumentByIdServer } from '@/features/documents/api/documentsServerApi';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -17,7 +17,7 @@ async function DocumentDetailsRoute({ params }: PageProps) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const document = await getDocumentById(id);
+  const document = await getDocumentByIdServer(id);
 
   if (!document) {
     notFound();

@@ -1,16 +1,22 @@
 import Link from 'next/link';
 
-import type { Document } from '@/shared/types/document';
+import { type Document } from '@/shared/types/document';
 import DocumentStatus from '@/shared/components/ui/DocumentStatus/DocumentStatus';
 import { formatFileSize } from '@/shared/utils/formatFileSize';
+import { CATEGORY_LABELS } from '@/shared/constants/document';
+
 import './DocumentCard.css';
 
 interface DocumentCardProps {
   document: Document;
+  href?: string | null;
 }
 
-export default function DocumentCard({ document }: DocumentCardProps) {
-  const formatedFileSize = formatFileSize(document.size);
+export default function DocumentCard({
+  document,
+  href = `/documents/${document.id}`,
+}: DocumentCardProps) {
+  const formattedFileSize = formatFileSize(document.sizeBytes);
 
   return (
     <article className="document-card">
@@ -22,12 +28,16 @@ export default function DocumentCard({ document }: DocumentCardProps) {
       </div>
 
       <div className="document-card__content">
-        <Link href={`/documents/${document.id}`}>
+        {href ? (
+          <Link href={href}>
+            <h2 className="document-card__title">{document.title}</h2>
+          </Link>
+        ) : (
           <h2 className="document-card__title">{document.title}</h2>
-        </Link>
+        )}
 
         <p className="document-card__meta">
-          {document.category} · {document.type} · {formatedFileSize}
+          {CATEGORY_LABELS[document.category]} · {document.type} · {formattedFileSize}
         </p>
 
         <p className="document-card__updated">

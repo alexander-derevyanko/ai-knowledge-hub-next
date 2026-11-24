@@ -1,17 +1,19 @@
 import { notFound } from 'next/navigation';
 
-import './DocumentDetails.css';
 import BackButton from '../BackButton/BackButton';
 import DocumentStatus from '@/shared/components/ui/DocumentStatus/DocumentStatus';
-import { getDocumentById } from '@/shared/api/documentsApi';
+import { getDocumentByIdServer } from '@/features/documents/api/documentsServerApi';
 import { formatFileSize } from '@/shared/utils/formatFileSize';
+import { CATEGORY_LABELS } from '@/shared/constants/document';
+
+import './DocumentDetails.css';
 
 type DocumentDetailsProps = {
   id: string;
 };
 
 export default async function DocumentDetailsPage({ id }: DocumentDetailsProps) {
-  const document = await getDocumentById(id);
+  const document = await getDocumentByIdServer(id);
 
   if (!document) {
     notFound();
@@ -66,7 +68,7 @@ export default async function DocumentDetailsPage({ id }: DocumentDetailsProps) 
         <dl className="document-details__grid">
           <div className="document-details__field">
             <dt>Category</dt>
-            <dd>{document.category}</dd>
+            <dd>{CATEGORY_LABELS[document.category]}</dd>
           </div>
 
           <div className="document-details__field">
@@ -75,8 +77,18 @@ export default async function DocumentDetailsPage({ id }: DocumentDetailsProps) 
           </div>
 
           <div className="document-details__field">
+            <dt>File name</dt>
+            <dd>{document.fileName}</dd>
+          </div>
+
+          <div className="document-details__field">
             <dt>File size</dt>
-            <dd>{formatFileSize(document.size)}</dd>
+            <dd>{formatFileSize(document.sizeBytes)}</dd>
+          </div>
+
+          <div className="document-details__field">
+            <dt>Created</dt>
+            <dd>{new Date(document.createdAt).toLocaleString('en-US')}</dd>
           </div>
 
           <div className="document-details__field">
