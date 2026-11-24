@@ -172,6 +172,7 @@ describe('Documents HTTP integration (e2e)', () => {
           data: expect.objectContaining({
             ...CREATE_DOCUMENT_BODY,
             organizationId: ORGANIZATION_ID,
+            uploadedById: USER_ID,
           }),
         }),
       );
@@ -234,6 +235,7 @@ describe('Documents HTTP integration (e2e)', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             organizationId: SECOND_ORGANIZATION_ID,
+            uploadedById: USER_ID,
           }),
         }),
       );
@@ -258,6 +260,32 @@ describe('Documents HTTP integration (e2e)', () => {
         expect.arrayContaining([
           expect.objectContaining({
             field: 'organizationId',
+          }),
+        ]),
+      );
+
+      expect(prismaMock.document.create).not.toHaveBeenCalled();
+    });
+
+    it('should reject uploadedById provided in the request body', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/documents')
+        .set('Cookie', sessionCookie)
+        .send({
+          ...CREATE_DOCUMENT_BODY,
+          uploadedById: 'another-user-id',
+        })
+        .expect(400);
+
+      expect(response.body).toMatchObject({
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+      });
+
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            field: 'uploadedById',
           }),
         ]),
       );

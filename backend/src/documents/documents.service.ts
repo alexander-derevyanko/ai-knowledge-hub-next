@@ -35,6 +35,7 @@ export type CreateDocumentInput = {
   mimeType: string;
   sizeBytes: number;
   organizationId: string;
+  uploadedById: string;
 };
 
 export type UpdateDocumentInput = {
@@ -160,6 +161,7 @@ export class DocumentsService {
         mimeType: input.mimeType,
         sizeBytes: input.sizeBytes,
         organizationId: input.organizationId,
+        uploadedById: input.uploadedById,
       },
       select: {
         id: true,

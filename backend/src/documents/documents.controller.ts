@@ -79,6 +79,7 @@ export class DocumentsController {
       mimeType: dto.mimeType,
       sizeBytes: dto.sizeBytes,
       organizationId,
+      uploadedById: user.id,
     };
 
     return this.documentsService.createDocument(input);

@@ -147,6 +147,7 @@ describe('DocumentsController', () => {
         mimeType: dto.mimeType,
         sizeBytes: dto.sizeBytes,
         organizationId: organizationA.id,
+        uploadedById: userWithOneOrganization.id,
       };
 
       await controller.createDocument(dto, userWithOneOrganization);
