@@ -1,18 +1,13 @@
 import 'server-only';
 
-import type { Document } from '../types/document';
+import type { Document } from '@/shared/types/document';
 import { DOCUMENTS } from '../data/documents';
 
+// TODO: temporary for the dashboard. Will be removed during Dashboard integration
 export async function fetchDocuments(): Promise<Document[]> {
   await new Promise<void>((resolve) => {
     setTimeout(resolve, 2000);
   });
 
   return [...DOCUMENTS];
-}
-
-export async function getDocumentById(id: string): Promise<Document | null> {
-  const document = DOCUMENTS.find((item) => item.id === id);
-
-  return document ?? null;
 }

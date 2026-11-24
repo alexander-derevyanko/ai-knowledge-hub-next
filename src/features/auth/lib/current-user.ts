@@ -5,6 +5,10 @@ import { backendFetch } from '@/shared/api/backendClient';
 
 import type { User } from '../types/auth';
 
+/**
+ * Retrieves the authenticated user directly from NestJS.
+ * Used by Server Components; avoids an unnecessary request through our own BFF.
+ */
 export async function getCurrentUser(): Promise<User | null> {
   const response = await backendFetch('/auth/me', {
     method: 'GET',

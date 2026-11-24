@@ -6,7 +6,7 @@ The project aims to evolve into an AI-powered knowledge workspace where users ca
 
 It is built as a long-term portfolio project with a focus on maintainable architecture, type safety, modular design, and production-oriented development practices.
 
-**Status:** Active development. The Next.js frontend foundation and NestJS backend API are implemented. The backend includes session-based authentication, organization-scoped document operations, PostgreSQL persistence, and Redis-backed session management. Frontend authentication is integrated with the backend, including registration with automatic login, login, logout, and protected application routes. Documents are integrated with the backend through the Next.js BFF. Physical file upload, document processing, and AI-powered capabilities remain on the roadmap.
+**Status:** Active development. The Next.js frontend foundation and NestJS backend API are implemented. The backend includes session-based authentication, organization-scoped document operations, PostgreSQL persistence, and Redis-backed session management. Frontend authentication is integrated with the NestJS backend through explicit Next.js BFF Route Handlers for registration, login, and logout. HttpOnly session cookies are forwarded between the browser and backend, while server-side current-user retrieval communicates directly with NestJS. Documents are integrated with the backend through the Next.js BFF. Physical file upload, document processing, and AI-powered capabilities remain on the roadmap.
 
 ---
 
@@ -100,14 +100,10 @@ The architecture follows a modular approach, separating application features, sh
 
 The frontend uses two communication patterns:
 
-- **Browser-to-backend through BFF:** Browser requests for the Documents feature go through explicit Next.js Route Handlers. The BFF forwards requests to NestJS and returns the backend response to the browser.
-- **Server-to-backend:** Next.js Server Components and server-side application logic communicate with NestJS directly through a server-only HTTP client. Session cookies are forwarded where authentication is required.
+- **Browser-to-backend through BFF:** Browser requests for Documents and authentication operations (registration, login, and logout) go through explicit same-origin Next.js Route Handlers. The BFF forwards requests to NestJS and returns backend responses to the browser, including session cookie headers when required.
+- **Server-to-backend:** Next.js Server Components and server-side application logic communicate directly with NestJS through a server-only HTTP client. The client forwards the current HttpOnly session cookie when authentication is required.
 
-The Documents feature has been migrated to the BFF approach.
-
-Authentication currently still uses direct browser-to-backend requests for registration, login, and logout. Migrating these requests to the Next.js BFF is the next integration step.
-
-NestJS remains responsible for authentication, session validation, authorization, business logic, request validation, and tenant isolation. The BFF does not replace backend security or domain logic.
+The BFF keeps browser-to-backend communication same-origin. NestJS remains responsible for authentication, session validation, authorization, business logic, request validation, and tenant isolation. The BFF does not replace backend security or domain logic.
 
 ### Data and Infrastructure
 
@@ -217,15 +213,13 @@ Create `.env.local` in the repository root:
 touch .env.local
 ```
 
-Add the backend API URL:
+Add the backend API URL to `.env.local`:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+BACKEND_API_URL=http://localhost:3001/api
 ```
 
-The frontend currently uses this URL for direct browser-to-backend authentication requests. Documents requests use the Next.js BFF and do not require the browser to use this URL.
-
-The variable will be removed after authentication is migrated to the BFF.
+This server-only variable is used by the Next.js backend client to communicate with NestJS. Browser requests use same-origin Next.js BFF endpoints and do not need direct access to the backend URL.
 
 The `.env.local` file contains local development configuration and must not be committed.
 
@@ -335,6 +329,9 @@ The project is being developed incrementally, with each milestone introducing a 
 - HttpOnly session cookie handling.
 - Server-side current-user retrieval through the backend API.
 - Protected application routes with Next.js Proxy and server-side authentication checks.
+- Browser-based authentication requests routed through explicit Next.js BFF endpoints.
+- Shared BFF request forwarding and backend-unavailable error handling.
+- Same-origin session cookie handling for login, registration, and logout.
 
 #### Backend
 
@@ -361,9 +358,6 @@ The project is being developed incrementally, with each milestone introducing a 
 - Unit tests and HTTP integration tests for authentication and document operations.
 
 ### In Progress
-
-- Migration of browser-based authentication requests to the Next.js BFF.
-- Consolidation of browser-to-backend communication through same-origin Next.js endpoints.
 
 ### Planned
 

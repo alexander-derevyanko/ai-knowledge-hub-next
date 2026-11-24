@@ -2,7 +2,7 @@ import { DASHBOARD_STATS, DashboardStats } from './dashboard.constants';
 import './DashboardPage.css';
 import StatCard from '@/shared/components/ui/StatCard/StatCard';
 import DocumentCard from '@/shared/components/ui/DocumentCard/DocumentCard';
-import { fetchDocuments } from '@/shared/api/documentsApi';
+import { fetchDocuments } from '@/features/dashboard/api/documentsApi';
 import { formatFileSize } from '@/shared/utils/formatFileSize';
 
 export default async function DashboardPage() {

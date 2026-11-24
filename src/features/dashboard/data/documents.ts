@@ -1,4 +1,9 @@
-import { DocumentCategory, DocumentStatus, DocumentType, type Document } from '../types/document';
+import {
+  DocumentCategory,
+  DocumentStatus,
+  DocumentType,
+  type Document,
+} from '../../../shared/types/document';
 
 type MockDocumentInput = Omit<Document, 'fileName' | 'mimeType' | 'createdAt'>;
 
@@ -20,6 +25,7 @@ function createMockDocument(document: MockDocumentInput): Document {
   };
 }
 
+// TODO: temporary mock for the Dashboard
 export const DOCUMENTS: Document[] = [
   createMockDocument({
     id: 'doc-001',

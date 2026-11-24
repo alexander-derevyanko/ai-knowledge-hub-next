@@ -1,4 +1,4 @@
-import { backendFetch } from '@/shared/api/backendClient';
+import { forwardBackendRequest } from '@/shared/api/backendBff';
 
 const ALLOWED_QUERY_PARAMS = [
   'page',
@@ -10,26 +10,11 @@ const ALLOWED_QUERY_PARAMS = [
   'sortOrder',
 ] as const;
 
-function createBackendUnavailableResponse(): Response {
-  return Response.json(
-    {
-      statusCode: 502,
-      code: 'BACKEND_UNAVAILABLE',
-      message: 'The backend service is temporarily unavailable',
-    },
-    {
-      status: 502,
-      headers: {
-        'Cache-Control': 'no-store',
-      },
-    },
-  );
-}
-
 export async function GET(request: Request): Promise<Response> {
   const requestUrl = new URL(request.url);
   const backendSearchParams = new URLSearchParams();
 
+  // Forward only supported query parameters to avoid passing arbitrary input.
   for (const key of ALLOWED_QUERY_PARAMS) {
     const value = requestUrl.searchParams.get(key);
 
@@ -41,61 +26,36 @@ export async function GET(request: Request): Promise<Response> {
   const queryString = backendSearchParams.toString();
   const path = `/documents${queryString ? `?${queryString}` : ''}`;
 
-  try {
-    const backendResponse = await backendFetch(path, {
-      method: 'GET',
-    });
-
-    const headers = new Headers({
-      'Cache-Control': 'no-store',
-    });
-
-    const contentType = backendResponse.headers.get('content-type');
-
-    if (contentType) {
-      headers.set('Content-Type', contentType);
-    }
-
-    return new Response(backendResponse.body, {
-      status: backendResponse.status,
-      headers,
-    });
-  } catch (error) {
-    console.error('[BFF] GET /api/documents failed:', error);
-
-    return createBackendUnavailableResponse();
-  }
+  return forwardBackendRequest(path, {
+    method: 'GET',
+  });
 }
 
 export async function POST(request: Request): Promise<Response> {
+  let body: unknown;
+
   try {
-    const body: unknown = await request.json();
-
-    const backendResponse = await backendFetch('/documents', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    body = await request.json();
+  } catch {
+    return Response.json(
+      {
+        statusCode: 400,
+        message: 'Invalid JSON request body',
       },
-      body: JSON.stringify(body),
-    });
-
-    const headers = new Headers({
-      'Cache-Control': 'no-store',
-    });
-
-    const contentType = backendResponse.headers.get('content-type');
-
-    if (contentType) {
-      headers.set('Content-Type', contentType);
-    }
-
-    return new Response(backendResponse.body, {
-      status: backendResponse.status,
-      headers,
-    });
-  } catch (error) {
-    console.error('[BFF] POST /api/documents failed:', error);
-
-    return createBackendUnavailableResponse();
+      {
+        status: 400,
+        headers: {
+          'Cache-Control': 'no-store',
+        },
+      },
+    );
   }
+
+  return forwardBackendRequest('/documents', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
 }

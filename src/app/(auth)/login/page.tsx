@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 
 import LoginForm from '@/features/auth/components/LoginForm/LoginForm';
-import { getCurrentUser } from '@/features/auth/lib/auth';
+import { getCurrentUser } from '@/features/auth/lib/current-user';
 
 async function LoginPageContent() {
   const user = await getCurrentUser();

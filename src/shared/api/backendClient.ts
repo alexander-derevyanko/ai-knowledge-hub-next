@@ -6,6 +6,11 @@ import { SESSION_COOKIE_NAME } from '@/shared/constants/auth';
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
+/**
+ * Server-side HTTP client for NestJS.
+ * Automatically forwards the current user's HttpOnly session cookie.
+ * Next.js → NestJS transport client
+ */
 export async function backendFetch(path: string, init: RequestInit = {}): Promise<Response> {
   if (!BACKEND_API_URL) {
     throw new Error('BACKEND_API_URL is not configured');

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 
-import { getCurrentUser } from '@/features/auth/lib/auth';
+import { getCurrentUser } from '@/features/auth/lib/current-user';
 import AppLayout from '@/shared/components/layout/AppLayout/AppLayout';
 
 async function ProtectedLayoutContent({ children }: { children: React.ReactNode }) {

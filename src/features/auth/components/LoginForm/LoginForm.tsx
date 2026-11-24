@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import './LoginForm.css';
 import type { LoginCredentials } from '../../types/auth';
 import { login } from '../../api/authApi';
-import Link from 'next/link';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -20,6 +20,7 @@ export default function LoginForm() {
     handleSubmit,
     setError,
     clearErrors,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<LoginCredentials>({
     defaultValues: {
@@ -30,11 +31,18 @@ export default function LoginForm() {
     reValidateMode: 'onChange',
   });
 
+  useEffect(() => {
+    clearErrors('root.server');
+  }, [clearErrors]);
+
   const onSubmit = async (credentials: LoginCredentials) => {
     clearErrors('root.server');
 
     try {
       await login(credentials);
+
+      reset();
+      setShowPassword(false);
 
       router.replace('/dashboard');
     } catch (error) {

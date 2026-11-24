@@ -2,26 +2,21 @@ import { getApiErrorMessage } from '@/shared/api/apiError';
 
 import type { LoginCredentials, RegisterCredentials, RegisterResponse } from '../types/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const AUTH_API_BASE_PATH = '/api/auth';
 
-async function postJson<TBody, TResponse>(
-  endpoint: string,
-  body: TBody,
-  credentials: RequestCredentials = 'same-origin',
-): Promise<TResponse> {
-  if (!API_BASE_URL) {
-    throw new Error('NEXT_PUBLIC_API_URL is not configured');
-  }
-
+/**
+ * Sends an authentication request through the same-origin Next.js BFF.
+ */
+async function postJson<TBody, TResponse>(endpoint: string, body: TBody): Promise<TResponse> {
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    response = await fetch(`${AUTH_API_BASE_PATH}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials,
+      credentials: 'same-origin',
       body: JSON.stringify(body),
     });
   } catch {
@@ -36,24 +31,20 @@ async function postJson<TBody, TResponse>(
 }
 
 export async function register(credentials: RegisterCredentials): Promise<RegisterResponse> {
-  return postJson<RegisterCredentials, RegisterResponse>('/auth/register', credentials, 'include');
+  return postJson<RegisterCredentials, RegisterResponse>('/register', credentials);
 }
 
 export async function login(credentials: LoginCredentials): Promise<void> {
-  await postJson<LoginCredentials, unknown>('/auth/login', credentials, 'include');
+  await postJson<LoginCredentials, unknown>('/login', credentials);
 }
 
 export async function logout(): Promise<void> {
-  if (!API_BASE_URL) {
-    throw new Error('NEXT_PUBLIC_API_URL is not configured');
-  }
-
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    response = await fetch(`${AUTH_API_BASE_PATH}/logout`, {
       method: 'POST',
-      credentials: 'include',
+      credentials: 'same-origin',
     });
   } catch {
     throw new Error('Unable to connect to the authentication server');
